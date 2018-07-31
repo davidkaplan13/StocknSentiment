@@ -27,15 +27,30 @@ class Twitter(object):
         try:
             for tweet in Cursor(api.search, q='#Amazon', count=10,lang="en", since_id=2018 - 7 - 30).items(10):
                 parsed_tweets.append(tweet.text)
-            self.DataPreparation(parsed_tweets)
+            self.Remove_URL(parsed_tweets)
 
         except error.TweepError as e:
             print("Sorry, The following Occured",e.reason)
 
-    def DataPreparation(self,parsed_tweets):
+    def Remove_URL(self,parsed_tweets):
         """Data Preparation on Parsed Tweets"""
-        ft = parsed_tweets[3].split()
-        ftl = re.sub(r'http\S+', '', str(ft))   #Removing URL links from Data
+        Removed_URL_Data = []
+        try:
+            for i in range(0,len(parsed_tweets)):
+                ft = parsed_tweets[i].split()
+                ftl = re.sub(r'http\S+', '', str(ft))  #Removing URL links from Data
+                Removed_URL_Data.append(ftl)
+                i += 1
+
+            self.ClassifyEmoticons(Removed_URL_Data)
+
+        except:
+            pass
+
+
+    def ClassifyEmoticons(self,Removed_URL_Data):
+        """Classifying Emoticons on pre-processed data"""
+        pass
 
 Twitter()
 
