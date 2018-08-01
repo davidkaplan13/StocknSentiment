@@ -1,8 +1,8 @@
 from tweepy import *
 from tkinter import *
-import re
-import emoji
+import re ,emoji
 import quandl
+import time
 
 
 #Twitter API Keys
@@ -67,6 +67,30 @@ class Twitter(object):
 
 Twitter()
 
+class Stock(object):
+    def __init__(self):
+        """Accessing Quandl API"""
+        quandl.ApiConfig.api_key = Quandl_API
+        self.PullStockData()
+
+    def PullStockData(self):
+        """Pulling Stock Data"""
+        try:
+            with open("Stock.txt", 'r') as read_company:
+                y = read_company.read()
+                stock = quandl.get("WIKI/"+str(y),rows=5)
+
+            self.DisplayStockData(stock)
+
+        except:
+            print("Unable to read Stock.txt")
+
+    def DisplayStockData(self,stock):
+        """Writes Pulled Stock Data into a File which is read by DisplayStockFigures()"""
+        with open("StockData.txt", 'w') as append_stock:
+            append_stock.write(str(stock))
+
+
 class Window(Frame):
 
     def __init__(self,master=None):
@@ -88,8 +112,12 @@ class Window(Frame):
         self.buttonL = Button(self.master,text='Twitter Data',fg='light steel blue',bg='light steel blue')
         self.buttonL.place(x=240,y=280,width=150)
 
-        self.buttonM = Button(self.master,text='View Graphs',fg='light steel blue',bg='light steel blue')
+        self.buttonM = Button(self.master,text='View Graphs',fg='light steel blue',bg='light steel blue',command=self.ViewWindow)
         self.buttonM.place(x=240,y=320,width=150)
+
+    def ViewWindow(self):
+        self.vWindow = Toplevel(self.master)
+        self.app = ViewGraphs(self.vWindow)
 
     def new_window(self):
         """Calls on for a new page"""
@@ -97,57 +125,73 @@ class Window(Frame):
         self.app = StockPage(self.nWindow)
 
 class StockPage(Frame):
+    """Stock Page"""
 
     def __init__(self,master=None):
         Frame.__init__(self,master)
         self.master = master
         self.create_twitterWindow()
         self.master.geometry("660x440")
+        self.stock = Stock()
 
     def create_twitterWindow(self):
         self.master.title("Stock Page")
         self.master.configure(background='linen')
 
-        self.LabelT = Label(self.master,text="Enter Company name in ticker format:",font=("Calibri",12))
-        self.EntryT = Entry(self.master)
+        self.LabelT = Label(self.master,text="Select Company:",font=("Calibri",12))
+        self.var = StringVar(self.master)
+
+        self.Choice = [
+            "AAPL",
+            "AMZN",
+            "MSFT"
+        ]
+        self.var.set(self.Choice[0])
+        self.w = OptionMenu(self.master,self.var,*self.Choice)      #Drop Down Menu
         self.ButtonT = Button(self.master,text="Enter",command=self.CompanyEntry)
-        self.LabelT.place(x=50,y=100)
-        self.EntryT.place(x=50,y=120)
-        self.ButtonT.place(x=50,y=180)
+
+        self.LabelT.place(x=30,y=100)
+        self.w.place(x=30,y=120)
+        self.ButtonT.place(x=30,y=170)
 
 
     def CompanyEntry(self):
+        """Retrives Entry of USER and calls on Pull Stock Data from Class Stock"""
         try:
-            x = self.EntryT.get()
+            x = self.var.get()
             print(x)
-            with open("Stock.txt",'w') as company: #Writes x over Stock.txt file which is read bu the Stock Class
+            with open("Stock.txt",'w') as company:  #Writes x over Stock.txt file which is read by the Stock Class
                 company.write(x)
+
+            self.stock.PullStockData()
+            time.sleep(5)                           #Allows time for DisplayStockData() to run
+            self.DisplayStockFigures()
+
         except:
             print("Unable to create Stock.txt File")
+
+    def DisplayStockFigures(self):
+        with open("StockData.txt", 'r') as read_stock:
+            x = read_stock.read()
+
+        self.LabelS = Label(self.master,text=x,font=("Calibri",10),bg="linen")
+        self.LabelS.place(x=170,y=100)
+
+
+class ViewGraphs(Frame):
+"""View Graphs for Stock and Sentiment"""
+    def __init__(self,master=None):
+        Frame.__init__(self, master)
+        self.master = master
+        self.master.geometry("660x440")
+        self.ViewGraphWindow()
+
+    def ViewGraphWindow(self):
+        self.master.title("View Graphs")
+        self.master.configure(background='medium sea green')
 
 
 root = Tk()
 root.geometry("660x440")
 app = Window(root)
 root.mainloop()
-
-class Stock(object):
-
-    def __init__(self):
-        """Accessing Quandl API"""
-        quandl.ApiConfig.api_key = Quandl_API
-        self.PullStockData()
-
-
-    def PullStockData(self):
-        """Pulling Stock Data"""
-        try:
-            with open("Stock.txt",'r') as read_company:
-                y = read_company.read()
-                stock = quandl.get("WIKI/" + str(y), rows=5)
-                print(str(stock))
-
-        except:
-            print("Unable to read Stock.txt")
-            
-Stock()
