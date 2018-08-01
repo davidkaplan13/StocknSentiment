@@ -4,6 +4,7 @@ import re
 import emoji
 import quandl
 
+
 #Twitter API Keys
 consumer_key = 'kgfbFJJwwp3I2gHyT1ibNVvPJ'
 consumer_secret = 'AoNjgNDvRn528ZnMG1funqEXeTZ760ZX7JGAmAgkKskrkzWNVp'
@@ -12,6 +13,7 @@ access_token_secret = 'i2x3zhDRqgEAjyuP9puLBMLR0bLDje63rPeDIqDi1J1lY'
 
 #Quandl API key
 Quandl_API = "9AK1N1LNy7PzHefyRR9w"
+
 
 class Twitter(object):
 
@@ -106,19 +108,28 @@ class StockPage(Frame):
         self.master.title("Stock Page")
         self.master.configure(background='linen')
 
-        self.LabelT = Label(self.master,text="Enter Company name:",font=("Calibri",12))
+        self.LabelT = Label(self.master,text="Enter Company name in ticker format:",font=("Calibri",12))
         self.EntryT = Entry(self.master)
         self.ButtonT = Button(self.master,text="Enter",command=self.CompanyEntry)
         self.LabelT.place(x=50,y=100)
-        self.EntryT.place(x=50,y=150)
-        self.ButtonT.place(x=50,y=200)
+        self.EntryT.place(x=50,y=120)
+        self.ButtonT.place(x=50,y=180)
 
 
     def CompanyEntry(self):
-        x = self.EntryT.get()
-        print(x)
+        try:
+            x = self.EntryT.get()
+            print(x)
+            with open("Stock.txt",'w') as company: #Writes x over Stock.txt file which is read bu the Stock Class
+                company.write(x)
+        except:
+            print("Unable to create Stock.txt File")
 
-        return x
+
+root = Tk()
+root.geometry("660x440")
+app = Window(root)
+root.mainloop()
 
 class Stock(object):
 
@@ -130,15 +141,13 @@ class Stock(object):
 
     def PullStockData(self):
         """Pulling Stock Data"""
-        y = StockPage.CompanyEntry(self)            #Resolve Issue...
-        stock = quandl.get("WIKI/"+str(y),rows=5)
-        print(str(stock))
+        try:
+            with open("Stock.txt",'r') as read_company:
+                y = read_company.read()
+                stock = quandl.get("WIKI/" + str(y), rows=5)
+                print(str(stock))
 
-        return stock
-
+        except:
+            print("Unable to read Stock.txt")
+            
 Stock()
-
-root = Tk()
-root.geometry("660x440")
-app = Window(root)
-root.mainloop()
