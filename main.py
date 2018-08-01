@@ -29,8 +29,17 @@ class Twitter(object):
         """Pulling Data from Twitter"""
         parsed_tweets = []
         try:
-            for tweet in Cursor(api.search, q='#Apple', count=10,lang="en", since_id=2018 - 7 - 30).items(10):
-                parsed_tweets.append(tweet.text)
+            with open("TwitterSearch.txt",'r') as twitter:      #Resolve Issue
+                y = twitter.read()
+                self.PullData()
+
+        except:
+            print("Error")
+
+        try:
+            for tweet in Cursor(api.search,q=('#'+str(y)),count=10,lang="en", since_id=2018 - 7 - 30).items(10):
+                print(parsed_tweets.append(tweet.text))
+
             self.Remove_URL(parsed_tweets)
 
         except error.TweepError as e:
@@ -65,7 +74,6 @@ class Twitter(object):
         except:
             print("Error in converting emojis")
 
-Twitter()
 
 class Stock(object):
     def __init__(self):
@@ -109,11 +117,15 @@ class Window(Frame):
         self.buttonN = Button(self.master,text='Stock Data',fg='light steel blue',bg="light steel blue",command=self.new_window)
         self.buttonN.place(x=240,y=240,width=150)
 
-        self.buttonL = Button(self.master,text='Twitter Data',fg='light steel blue',bg='light steel blue')
+        self.buttonL = Button(self.master,text='Twitter Data',fg='light steel blue',bg='light steel blue',command=self.tWindow)
         self.buttonL.place(x=240,y=280,width=150)
 
         self.buttonM = Button(self.master,text='View Graphs',fg='light steel blue',bg='light steel blue',command=self.ViewWindow)
         self.buttonM.place(x=240,y=320,width=150)
+
+    def tWindow(self):
+        self.twitterWindow = Toplevel(self.master)
+        self.app = TwitterPage(self.twitterWindow)
 
     def ViewWindow(self):
         self.vWindow = Toplevel(self.master)
@@ -174,12 +186,12 @@ class StockPage(Frame):
         with open("StockData.txt", 'r') as read_stock:
             x = read_stock.read()
 
-        self.LabelS = Label(self.master,text=x,font=("Calibri",10),bg="linen")
+        self.LabelS = Label(self.master,text=x,font=("Calibri",10),bg="linen",borderwidth=3,relief="groove")
         self.LabelS.place(x=170,y=100)
 
 
 class ViewGraphs(Frame):
-"""View Graphs for Stock and Sentiment"""
+    """View Graphs for Stock and Sentiment"""
     def __init__(self,master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -188,8 +200,40 @@ class ViewGraphs(Frame):
 
     def ViewGraphWindow(self):
         self.master.title("View Graphs")
-        self.master.configure(background='medium sea green')
+        self.master.configure(background='white smoke')
 
+class TwitterPage(Frame):
+    """Twitter Page"""
+    def __init__(self,master=None):
+        Frame.__init__(self,master)
+        self.master = master
+        self.master.geometry("660x440")
+        self.twittersearch = Twitter()
+        self.MainTwitterPage()
+
+
+    def MainTwitterPage(self):
+        self.master.title("Twitter Page")
+        self.master.configure(background='floral white')
+
+        self.twitterLabel = Label(self.master,text="Twitter Query", font=("Calibri",14),bg='floral white',borderwidth = 2,relief = 'groove')
+        self.twitterEntry = Entry(self.master,borderwidth=2,relief='groove')
+        self.twitterButton = Button(self.master,text="Submit",command=self.GetEntry)
+        self.twitterLabel.place(x=50,y=100)
+        self.twitterEntry.place(x=50,y=125)
+        self.twitterButton.place(x=50,y=160)
+
+    def GetEntry(self):
+        try:
+            m = self.twitterEntry.get()
+            with open("TwitterSearch.txt",'w') as submit:   #Resolve Issue
+                submit.write(m)
+
+            time.sleep(10)
+            self.twittersearch.PullData()
+
+        except:
+            print("Errors")
 
 root = Tk()
 root.geometry("660x440")
