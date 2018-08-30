@@ -12,12 +12,12 @@ global negativeEmojiList
 
 positiveEmojiList =[':smile:',':simple_smile:',':laughing:',':blush:',
                     ':smiley:',':relaxed:',':heart_eyes:',':grin:',
-                    ':grinning:',':kissing:',':sweat_smile:',':joy:',':satisfied:',':crown:']
+                    ':grinning:',':kissing:',':sweat_smile:',':joy:',
+                    ':satisfied:',':crown:','face_with_tears_of_joy',':fire:',':money_bag:',':dollar_banknote:']
 
 negativeEmojiList = [':worried:',':frowning:',':anguished:',':grimacing:',
                      ':disappointed_relieved:',':unamused:',':fearful:',':sob:',
-                     ':cry:',':angry:',':rage:',':frowning:',]
-
+                     ':cry:',':angry:',':rage:',':frowning:',':man_shrugging:',':face_screaming_in_fear:']
 class Twitter(object):
 
     def __init__(self):
@@ -48,6 +48,8 @@ class Twitter(object):
 
     def CountSentimentOfEmojis(self,CleanTweetNoEmoji):
 
+        global positiveCounter
+        global negativeCounter
         positiveCounter = 0
         negativeCounter = 0
 
@@ -63,21 +65,67 @@ class Twitter(object):
 
         return positiveCounter,negativeCounter
 
+    def ClassifyWords(self,CleanTweet):
+        """Needs Fixing"""
+        global posWordCounter
+        global negWordCounter
+        posWordCounter = 0
+        negWordCounter = 0
+
+        PosFile = open("PositiveWords.txt")     #PositiveWord List extracted from : http://ptrckprry.com/course/ssd/data/positive-words.txt
+        NegFile = open("NegativeWords.txt")
+
+        try:
+            for words in CleanTweet.split():
+                if PosFile.read() in words:
+                    posWordCounter += 1
+
+                elif NegFile.read() in words:
+                    negWordCounter += 1
+
+                else:
+                    pass
+
+        except:
+            print("No Such String")
+
+
+        return posWordCounter,negWordCounter
+
+    def FrequencyTables(self,CleanTweet):
+
+        positiveTweets = 0
+        negativeTweets = 0
+
+        TotalPos = posWordCounter+positiveCounter
+        TotalNeg = negWordCounter+negativeCounter
+        OverallTotal = (TotalPos - TotalNeg)/(len(CleanTweet.split()))
+
+        if OverallTotal > 0.5:
+            print("Positive Tweet",OverallTotal)
+        elif OverallTotal < 0.5:
+            print("Negative Tweet",OverallTotal)
+        else:
+            print("Neutral")
+
+
+        return positiveTweets,negativeTweets
+
     def MainLoop(self):
 
-        search = Cursor(self.api.search,q='apple',lang='en',count=20)
+        search = Cursor(self.api.search,q='#westbrook',lang='en',count=20)
         counterOfTweets=0
 
         try:
-            for tweet in search.items(2):
+            for tweet in search.items(3):
                 counterOfTweets+=1
-                #print(counterOfTweets,tweet.text)
-
                 CleanTweet = self.Remove_URL(tweet)
                 CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
                 CountEmoji = self.CountSentimentOfEmojis(CleanTweetNoEmoji)
+                classifyWords = self.ClassifyWords(CleanTweet)
+                countNumbers = self.FrequencyTables(CleanTweet)
 
-                print("noEmoji:",CleanTweetNoEmoji,CountEmoji)
+                print("noEmoji:",counterOfTweets,CleanTweetNoEmoji,CountEmoji,classifyWords,countNumbers)
 
 
         except error.TweepError as e:
