@@ -1,6 +1,8 @@
 from tweepy import *
 import re
 import emoji
+import statistics
+import math
 
 consumer_key = 'kgfbFJJwwp3I2gHyT1ibNVvPJ'
 consumer_secret = 'AoNjgNDvRn528ZnMG1funqEXeTZ760ZX7JGAmAgkKskrkzWNVp'
@@ -13,7 +15,7 @@ global negativeEmojiList
 positiveEmojiList =[':smile:',':simple_smile:',':laughing:',':blush:',
                     ':smiley:',':relaxed:',':heart_eyes:',':grin:',
                     ':grinning:',':kissing:',':sweat_smile:',':joy:',
-                    ':satisfied:',':crown:','face_with_tears_of_joy',':fire:',':money_bag:',':dollar_banknote:']
+                    ':satisfied:',':crown:','face_with_tears_of_joy',':fire:',':money_bag:',':dollar_banknote:',':glowing_star:']
 
 negativeEmojiList = [':worried:',':frowning:',':anguished:',':grimacing:',
                      ':disappointed_relieved:',':unamused:',':fearful:',':sob:',
@@ -75,17 +77,22 @@ class Twitter(object):
         PosFile = open("PositiveWords.txt")     #PositiveWord List extracted from : http://ptrckprry.com/course/ssd/data/positive-words.txt
         NegFile = open("NegativeWords.txt")
 
+        wordlist = []
         try:
             for words in CleanTweet.split():
-                if PosFile.read() in words:
-                    posWordCounter += 1
+                wordlist.append(words.lower())
 
-                elif NegFile.read() in words:
+            for i in range(0,len(wordlist)):
+                if wordlist[i] in PosFile.read():
+                    posWordCounter += 1
+                    i += 1
+
+                elif wordlist[i] in NegFile.read():
                     negWordCounter += 1
+                    i += 1
 
                 else:
-                    pass
-
+                    i += 1
         except:
             print("No Such String")
 
@@ -101,9 +108,9 @@ class Twitter(object):
         TotalNeg = negWordCounter+negativeCounter
         OverallTotal = (TotalPos - TotalNeg)/(len(CleanTweet.split()))
 
-        if OverallTotal > 0.5:
+        if OverallTotal > 0:
             print("Positive Tweet",OverallTotal)
-        elif OverallTotal < 0.5:
+        elif OverallTotal < 0:
             print("Negative Tweet",OverallTotal)
         else:
             print("Neutral")
@@ -111,13 +118,19 @@ class Twitter(object):
 
         return positiveTweets,negativeTweets
 
+    def FindCorrelation(self):
+
+        t = ((statistics.mean(x) - statistics.mean(y))/(math.sqrt((statistics.stdev(x)^2/N))+(statistics.stdev(y)^2/n)))
+        ##Student T-test - x - Sample 1, y-Sample 2 , N is sample 1, n is sample 2
+
+
     def MainLoop(self):
 
         search = Cursor(self.api.search,q='#westbrook',lang='en',count=20)
         counterOfTweets=0
 
         try:
-            for tweet in search.items(3):
+            for tweet in search.items(7):
                 counterOfTweets+=1
                 CleanTweet = self.Remove_URL(tweet)
                 CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
