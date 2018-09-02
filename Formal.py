@@ -157,7 +157,6 @@ class Twitter(object):
 
 Twitter()
 
-
 class Stock(object):
 
     def __init__(self):
@@ -169,7 +168,7 @@ class Stock(object):
         try:
             print(stockentry)
             global Data
-            data = quandl.get('WIKI/MSFT', rows=50)
+            data = quandl.get('WIKI/'+str(stockentry), rows=50)
             Data = data
             self.DisplayStockGraph()
             #self.Twitter.FindCorrelation()
@@ -179,9 +178,11 @@ class Stock(object):
 
 
     def DisplayStockGraph(self):
+
         plt.style.use('ggplot')
         fig = plt.figure()
-        fig.suptitle('MSFT STOCK DATA', fontsize=12, fontweight='bold')
+        fig.suptitle(stockentry+' STOCK DATA', fontsize=12)
+
         Data['MA50'] = Data['Close'].rolling(5).mean()#Creates A 5-Day Moving Average
         plt.plot(Data['Close'])
         plt.plot(Data['MA50'])
@@ -200,8 +201,17 @@ class Window(Frame):
         self.master.title("Main")
         self.master.configure(background='snow', highlightbackground='light steel blue')
 
-        self.LabelT = Label(self.master, text="Select Company:", font=("Calibri", 12))
+        self.canvas = Canvas(root,width=670,height=450)
+        self.canvas.pack()
+
+        self.line = self.canvas.create_line(329,-10,329,450,fill='light steel blue') #Seprates the Main window - Left=Stock Right=Twitter Query
+
+        self.LabelT = Label(self.master, text="Select Company:", font=("Calibri", 14))
         self.var = StringVar(self.master)
+
+        self.LabelTQ = Label(self.master,text='Twitter Query:',font=("Calibri",14))
+        self.EntryTQ = Entry(self.master,borderwidth=2)
+        self.ButtonTQ = Button(self.master, text="Enter", command=self.TwitterQueryEntry)
 
         self.Choice = [
             "AAPL",
@@ -213,8 +223,12 @@ class Window(Frame):
         self.ButtonT = Button(self.master, text="Enter", command=self.CompanyEntry)
 
         self.LabelT.place(x=30, y=100)
-        self.w.place(x=30, y=120)
+        self.w.place(x=30, y=130)
         self.ButtonT.place(x=30, y=170)
+
+        self.LabelTQ.place(x=360,y=100)
+        self.EntryTQ.place(x=360,y=130)
+        self.ButtonTQ.place(x=360,y=170)
 
     def CompanyEntry(self):
         """Retrives Entry of USER"""
@@ -226,6 +240,9 @@ class Window(Frame):
         except:
             print("Error")
 
+    def TwitterQueryEntry(self):
+        query = self.EntryTQ.get()
+        print(query)
 
 root = Tk()
 root.geometry("660x440")
