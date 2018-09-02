@@ -5,6 +5,10 @@ import statistics
 import math
 import quandl
 from tkinter import *
+import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
 
 
 consumer_key = 'kgfbFJJwwp3I2gHyT1ibNVvPJ'
@@ -17,33 +21,35 @@ Quandl_API = "9AK1N1LNy7PzHefyRR9w"
 global positiveEmojiList
 global negativeEmojiList
 
-positiveEmojiList =[':smile:',':simple_smile:',':laughing:',':blush:',
-                    ':smiley:',':relaxed:',':heart_eyes:',':grin:',
-                    ':grinning:',':kissing:',':sweat_smile:',':joy:',
-                    ':satisfied:',':crown:','face_with_tears_of_joy',':fire:',':money_bag:',':dollar_banknote:',':glowing_star:']
+positiveEmojiList = [':smile:', ':simple_smile:', ':laughing:', ':blush:',
+                     ':smiley:', ':relaxed:', ':heart_eyes:', ':grin:',
+                     ':grinning:', ':kissing:', ':sweat_smile:', ':joy:',
+                     ':satisfied:', ':crown:', 'face_with_tears_of_joy', ':fire:', ':money_bag:', ':dollar_banknote:',
+                     ':glowing_star:']
 
-negativeEmojiList = [':worried:',':frowning:',':anguished:',':grimacing:',
-                     ':disappointed_relieved:',':unamused:',':fearful:',':sob:',
-                     ':cry:',':angry:',':rage:',':frowning:',':man_shrugging:',':face_screaming_in_fear:']
+negativeEmojiList = [':worried:', ':frowning:', ':anguished:', ':grimacing:',
+                     ':disappointed_relieved:', ':unamused:', ':fearful:', ':sob:',
+                     ':cry:', ':angry:', ':rage:', ':frowning:', ':man_shrugging:', ':face_screaming_in_fear:']
+
+
 class Twitter(object):
 
     def __init__(self):
-        self.auth = OAuthHandler(consumer_key,consumer_secret)
-        self.auth.set_access_token(access_token,access_token_secret)
+        self.auth = OAuthHandler(consumer_key, consumer_secret)
+        self.auth.set_access_token(access_token, access_token_secret)
         self.api = API(self.auth)
         self.MainLoop()
 
-
-    def Remove_URL(self,tweet):
+    def Remove_URL(self, tweet):
 
         try:
-            noUrl = re.sub(r'http\S+','',str(tweet.text))
+            noUrl = re.sub(r'http\S+', '', str(tweet.text))
             return noUrl
 
         except:
             print("Error")
 
-    def IdentifyEmoji(self,CleanTweet):
+    def IdentifyEmoji(self, CleanTweet):
 
         try:
             noEmoji = emoji.demojize(CleanTweet)
@@ -52,8 +58,7 @@ class Twitter(object):
         except:
             print("Error in converting emojis")
 
-
-    def CountSentimentOfEmojis(self,CleanTweetNoEmoji):
+    def CountSentimentOfEmojis(self, CleanTweetNoEmoji):
 
         global positiveCounter
         global negativeCounter
@@ -70,16 +75,17 @@ class Twitter(object):
             else:
                 pass
 
-        return positiveCounter,negativeCounter
+        return positiveCounter, negativeCounter
 
-    def ClassifyWords(self,CleanTweet):
+    def ClassifyWords(self, CleanTweet):
         """Needs Fixing"""
         global posWordCounter
         global negWordCounter
         posWordCounter = 0
         negWordCounter = 0
 
-        PosFile = open("PositiveWords.txt")     #PositiveWord List extracted from : http://ptrckprry.com/course/ssd/data/positive-words.txt
+        PosFile = open(
+            "PositiveWords.txt")  # PositiveWord List extracted from : http://ptrckprry.com/course/ssd/data/positive-words.txt
         NegFile = open("NegativeWords.txt")
 
         wordlist = []
@@ -87,7 +93,7 @@ class Twitter(object):
             for words in CleanTweet.split():
                 wordlist.append(words.lower())
 
-            for i in range(0,len(wordlist)):
+            for i in range(0, len(wordlist)):
                 if wordlist[i] in PosFile.read():
                     posWordCounter += 1
                     i += 1
@@ -101,49 +107,47 @@ class Twitter(object):
         except:
             print("No Such String")
 
+        return posWordCounter, negWordCounter
 
-        return posWordCounter,negWordCounter
-
-    def FrequencyTables(self,CleanTweet):
+    def FrequencyTables(self, CleanTweet):
 
         positiveTweets = 0
         negativeTweets = 0
 
-        TotalPos = posWordCounter+positiveCounter
-        TotalNeg = negWordCounter+negativeCounter
-        OverallTotal = (TotalPos - TotalNeg)/(len(CleanTweet.split()))
+        TotalPos = posWordCounter + positiveCounter
+        TotalNeg = negWordCounter + negativeCounter
+        OverallTotal = (TotalPos - TotalNeg) / (len(CleanTweet.split()))
 
         if OverallTotal > 0:
-            print("Positive Tweet",OverallTotal)
+            print("Positive Tweet", OverallTotal)
         elif OverallTotal < 0:
-            print("Negative Tweet",OverallTotal)
+            print("Negative Tweet", OverallTotal)
         else:
             print("Neutral")
 
-
-        return positiveTweets,negativeTweets
+        return positiveTweets, negativeTweets
 
     def FindCorrelation(self):
 
-        t = ((statistics.mean(x) - statistics.mean(y))/(math.sqrt((statistics.stdev(x)^2/N))+(statistics.stdev(y)^2/n)))
+        closeValues = Data['Close'].get_values()
+        #t = ((statistics.mean(x) - statistics.mean(y)) / (math.sqrt((statistics.stdev(x) ^ 2 / N)) + (statistics.stdev(y) ^ 2 / n)))
         ##Student T-test - x - Sample 1, y-Sample 2 , N is sample 1, n is sample 2
-
 
     def MainLoop(self):
 
-        search = Cursor(self.api.search,q='#westbrook',lang='en',count=20)
-        counterOfTweets=0
+        search = Cursor(self.api.search, q='#westbrook', lang='en', count=20)
+        counterOfTweets = 0
 
         try:
             for tweet in search.items(7):
-                counterOfTweets+=1
+                counterOfTweets += 1
                 CleanTweet = self.Remove_URL(tweet)
                 CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
                 CountEmoji = self.CountSentimentOfEmojis(CleanTweetNoEmoji)
                 classifyWords = self.ClassifyWords(CleanTweet)
                 countNumbers = self.FrequencyTables(CleanTweet)
 
-                print("noEmoji:",counterOfTweets,CleanTweetNoEmoji,CountEmoji,classifyWords,countNumbers)
+                print("noEmoji:", counterOfTweets, CleanTweetNoEmoji, CountEmoji, classifyWords, countNumbers)
 
 
         except error.TweepError as e:
@@ -153,36 +157,48 @@ class Twitter(object):
 
 Twitter()
 
+
 class Stock(object):
 
     def __init__(self):
         quandl.ApiConfig.api_key = Quandl_API
+        self.Twitter = Twitter()
         self.StockData()
 
     def StockData(self):
         try:
+            print(stockentry)
+            global Data
             data = quandl.get('WIKI/MSFT', rows=50)
-            data.reset_index()
-
-            closeValues = data['Close'].get_values()  # The close Value will be used in calculating coefficients
+            Data = data
+            self.DisplayStockGraph()
+            #self.Twitter.FindCorrelation()
 
         except:
             pass
 
 
-Stock()
+    def DisplayStockGraph(self):
+        plt.style.use('ggplot')
+        fig = plt.figure()
+        fig.suptitle('MSFT STOCK DATA', fontsize=12, fontweight='bold')
+        Data['MA50'] = Data['Close'].rolling(5).mean()#Creates A 5-Day Moving Average
+        plt.plot(Data['Close'])
+        plt.plot(Data['MA50'])
+        plt.show()
 
 class Window(Frame):
 
-    def __init__(self,master=None):
-        Frame.__init__(self,master)
-        self.master= master
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.master = master
         self.main_window()
+        self.Stock = Stock()
 
     def main_window(self):
 
         self.master.title("Main")
-        self.master.configure(background='snow',highlightbackground='light steel blue')
+        self.master.configure(background='snow', highlightbackground='light steel blue')
 
         self.LabelT = Label(self.master, text="Select Company:", font=("Calibri", 12))
         self.var = StringVar(self.master)
@@ -200,12 +216,12 @@ class Window(Frame):
         self.w.place(x=30, y=120)
         self.ButtonT.place(x=30, y=170)
 
-
     def CompanyEntry(self):
         """Retrives Entry of USER"""
+        global stockentry
         try:
-            x = self.var.get()
-            print(x)
+            stockentry = self.var.get()
+            self.Stock.StockData()
 
         except:
             print("Error")
