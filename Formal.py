@@ -185,7 +185,8 @@ class Stock(object):
 
         Data['MA50'] = Data['Close'].rolling(5).mean()#Creates A 5-Day Moving Average
         plt.plot(Data['Close'])
-        plt.plot(Data['MA50'])
+        plt.plot(Data['MA50'], label="Moving Average")
+        plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand",borderaxespad=0.)  # Line of code taken from https://matplotlib.org/users/legend_guide.html
         plt.show()
 
 class Window(Frame):
