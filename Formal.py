@@ -81,6 +81,7 @@ class Twitter(object):
         """Needs Fixing"""
         global posWordCounter
         global negWordCounter
+
         posWordCounter = 0
         negWordCounter = 0
 
@@ -164,9 +165,11 @@ class Twitter(object):
                     TotalNeuTweets += 1
 
             print(TotalPosTweets,TotalNegTweets)
+
             global OverallSentiment
             OverallSentiment = ((TotalPosTweets-TotalNegTweets)/(TotalPosTweets+TotalNegTweets+TotalNeuTweets))
             print("Overall the Total Sentiment of 50 tweets is:",OverallSentiment)
+
             if OverallSentiment > 0:
                 print("Hence , Positive")
             elif OverallSentiment < 0:
@@ -280,6 +283,10 @@ class Window(Frame):
         self.LabelWP = Label(self.master, text="Welcome To Stock/Sentiment", font=("Calibri", 14), underline=True)
         self.LabelWP.place(x=50, y=10)
 
+        self.ButtonHP = Button(self.master,text="Help",command=self.GoToHelpPage)
+        self.ButtonHP.place(x=600,y=10)
+
+
     #def DisplayOS(self):
         #self.LabelOS = Label(self.master, text='Overall Sentiment: ' + str(OverallSentiment), font=("Calibri", 14))
         #self.LabelOS.place(x=360, y=300)
@@ -304,6 +311,61 @@ class Window(Frame):
         except:
             print("Error")
 
+    def GoToHelpPage(self):
+        self.helppage= Toplevel(self.master)
+        self.app = HelpPage(self.helppage)
+
+class HelpPage(Frame):
+
+    def __init__(self,master=None):
+        Frame.__init__(self, master)
+        self.master = master
+        self.master.geometry("660x440")
+        self.create_Help_Page()
+
+
+    def create_Help_Page(self):
+        self.master.title("Help Page")
+        self.master.configure(background='snow')
+
+        self.LabelHP = Label(self.master,text="Select an Option:")
+        self.var = StringVar(self.master)
+        self.Choice = [
+            "Help With Stock Graph",
+            "Help with Twitter Query",
+            "About"
+        ]
+        self.var.set(self.Choice[0])
+        self.w = OptionMenu(self.master, self.var, *self.Choice)  # Drop Down Menu
+        self.buttonx = Button(self.master,text="Enter",command=self.getEntry)
+
+        self.LabelHP.place(x=39,y=100)
+        self.w.place(x=30, y=130)
+        self.buttonx.place(x=30, y=170)
+
+        self.canvas = Canvas(root, width=670, height=450)
+        self.canvas.pack()
+
+        self.line = self.canvas.create_line(329, -10, 329, 450, fill='light steel blue')
+
+
+    def getEntry(self):
+        entry = self.var.get()
+        if entry == "Help With Stock Graph":
+            self.HelpStock()
+        elif entry == "Help with Twitter Query":
+            self.HelpTwitter()
+        else:
+            self.About()
+
+    def HelpStock(self):
+        pass
+
+    def HelpTwitter(self):
+        pass
+
+    def About(self):
+        pass
 
 root = Tk()
 root.geometry("660x440")
