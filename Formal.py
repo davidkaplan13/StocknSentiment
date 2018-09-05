@@ -7,10 +7,12 @@ import quandl
 from tkinter import *
 import numpy as np
 import matplotlib
+from mpl_finance import candlestick_ohlc
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-
-
+import matplotlib.dates as mdates
+from matplotlib import *
+import datetime
 consumer_key = 'kgfbFJJwwp3I2gHyT1ibNVvPJ'
 consumer_secret = 'AoNjgNDvRn528ZnMG1funqEXeTZ760ZX7JGAmAgkKskrkzWNVp'
 access_token = '1017368312081154048-MQnLaHAveFccgzDlHBXyiwWBSSWSXc'
@@ -141,7 +143,22 @@ class Twitter(object):
         #Student T-test - x - Sample 1, y-Sample 2 , N is sample 1, n is sample 2
 
     def Main(self):
-        search = Cursor(self.api.search, q='#'+str(query), lang='en', count=20)
+        x = 0
+        y = 0
+        if date == 1:
+            print("Jan")
+            x = datetime.datetime(2018,1,1)
+            y = datetime.datetime(2018,1,31)
+        elif date == 2:
+            print("Feb")
+            x = datetime.datetime(2018,2,1)
+            y = datetime.datetime(2018,2,28)
+        else:
+            print("March")
+            x = datetime.datetime(2018,3,1)
+            y = datetime.datetime(2018,3,31)
+
+        search = Cursor(self.api.search, q='#westbrook', lang='en', count=20)
         counterOfTweets = 0
         TotalPosTweets = 0
         TotalNegTweets = 0
@@ -149,21 +166,24 @@ class Twitter(object):
 
         try:
             for tweet in search.items(50):
-                counterOfTweets += 1
-                CleanTweet = self.Remove_URL(tweet)
-                CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
-                CountEmoji = self.CountSentimentOfEmojis(CleanTweetNoEmoji)
-                classifyWords = self.ClassifyWords(CleanTweet)
-                countNumbers = self.FrequencyTables(CleanTweet)
+                if tweet.created_at < y and tweet.created_at > x: #NEEDS fixing
+                    print(tweet)
+                    counterOfTweets += 1
+                    CleanTweet = self.Remove_URL(tweet)
+                    CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
+                    CountEmoji = self.CountSentimentOfEmojis(CleanTweetNoEmoji)
+                    classifyWords = self.ClassifyWords(CleanTweet)
+                    countNumbers = self.FrequencyTables(CleanTweet)
 
-                print("noEmoji:", counterOfTweets, CleanTweetNoEmoji, CountEmoji, classifyWords, countNumbers)
-                if OverallTotal > 0:
-                    TotalPosTweets += 1
-                elif OverallTotal < 0:
-                    TotalNegTweets += 1
+                    print("noEmoji:", counterOfTweets, CleanTweetNoEmoji, CountEmoji, classifyWords, countNumbers)
+                    if OverallTotal > 0:
+                        TotalPosTweets += 1
+                    elif OverallTotal < 0:
+                        TotalNegTweets += 1
+                    else:
+                        TotalNeuTweets += 1
                 else:
-                    TotalNeuTweets += 1
-
+                    print("NOPE")
             print(TotalPosTweets,TotalNegTweets)
 
             global OverallSentiment
@@ -201,41 +221,52 @@ class Stock(object):
         except:
             pass
 
-    def RSIFunction(self):
-        """RSI function : RSI = 100 - (100/1+RS)
-        Where RS = Average Gain/Average LOSS"""
+    def GraphClick(self,event):
+        """Finds Location of CLICK x-data"""
+        cx = float(event.xdata)
+        global date
+        date = 0
+        if cx >= 734670 and cx < 736730:
+            date = 1
+        elif cx > 736730 and cx < 736760:
+            date = 2
+        else:
+            date = 3
 
-        Close = Data['Close'].get_values()
-        print(Close)
-        diffdelta = Close.diff()
-        print(diffdelta)
-        diffdelta = diffdelta[1:]
-        print(diffdelta)#Gets rid of the first row, as it has no upper row to calculate differences
-        up, down = diffdelta.copy(), diffdelta.copy()
-        up[up < 0] = 0
-        down[down > 0] = 0
-
-        rollmeanup = up.rolling(14).mean()
-        rollmeandown = down.rolling(14).mean()
-
-        print(rollmeanup)
-        RS = rollmeanup/rollmeandown
-        RSI = 100.0 - (100.0 / (1.0 + RS))
-        print(RSI)                          #NEEDS FIXING
-
+        self.Twitter.Main()
 
     def DisplayStockGraph(self):
-
         plt.style.use('ggplot')
-        fig = plt.figure()
-        fig.suptitle(stockentry+' STOCK DATA', fontsize=12)
 
-        Data['MA50'] = Data['Close'].rolling(5).mean()#Creates A 5-Day Moving Average
-        plt.plot(Data['Close'])
-        plt.plot(Data['MA50'], label="Moving Average")
-        plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand",borderaxespad=0.)  # Line of code taken from https://matplotlib.org/users/legend_guide.html
-        plt.show()
-        self.RSIFunction()
+        Data['MA50'] = Data['Close'].rolling(7).mean()#Creates A 7-Day Moving Average
+        MovingAverage = Data['Close'].rolling(7).mean()
+        StandardDeviation = Data['Close'].rolling(7).std()
+        Data['UpBB'] = MovingAverage + (2 * StandardDeviation) #Bollinger Bands Indicator - Upper Boundary
+        Data['LowBB'] = MovingAverage - (2 * StandardDeviation) #Bollinger Bands Indicator- Lower Boundary
+
+        fig = plt.figure(figsize=(9, 9))
+        fig.suptitle(stockentry + ' STOCK DATA', fontsize=12)
+
+        ax = fig.add_subplot(2, 1, 1)
+        Data['Date'] = Data.index.map(mdates.date2num)
+        plt.plot(Data['Close'], Label="Close",color="green")
+        plt.plot(Data['MA50'], label="Moving Average",color="blue")
+        plt.plot(Data['UpBB'], Label="Upper Bollinger Band",color="red")
+        plt.plot(Data['LowBB'], Label="Lower Bollinger Band",color="grey")
+        plt.xlabel("Date")
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        plt.legend(loc='best')
+
+        ax2 = fig.add_subplot(2, 1, 2)
+        Data['Date'] = Data.index.map(mdates.date2num)
+        candlestickData = Data[['Date', 'Open', 'High', 'Low', 'Close']]
+        candlestick_ohlc(ax2, candlestickData.values, width=.6, colorup='green', colordown='red')
+        plt.xlabel("Date")
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        fig.canvas.mpl_connect('button_press_event',self.GraphClick)
+        plt.show(ax)
+
+
 
 class Window(Frame):
 
@@ -326,7 +357,7 @@ class HelpPage(Frame):
 
     def create_Help_Page(self):
         self.master.title("Help Page")
-        self.master.configure(background='snow')
+        self.master.configure(background='snow',highlightbackground='light steel blue')
 
         self.LabelHP = Label(self.master,text="Select an Option:")
         self.var = StringVar(self.master)
@@ -351,6 +382,7 @@ class HelpPage(Frame):
 
     def getEntry(self):
         entry = self.var.get()
+        print(entry)
         if entry == "Help With Stock Graph":
             self.HelpStock()
         elif entry == "Help with Twitter Query":
@@ -359,13 +391,17 @@ class HelpPage(Frame):
             self.About()
 
     def HelpStock(self):
-        pass
+        self.LabelHS = Label(self.master,text="Ticker Information \n AAPL = APPLE \n AMZN = AMAZON \n MSFT = MICROSOFT" , font=("Calibri", 12))
+        self.LabelHS.place(x=300,y=150)
 
     def HelpTwitter(self):
-        pass
+
+        self.LabelHT = Label(self.master,text="Enter your Query and Hit Enter Button \n This query will used to pull Twitter Data from the Database",font=("Calibri",12))
+        self.LabelHT.place(x=300,y=100)
 
     def About(self):
         pass
+
 
 root = Tk()
 root.geometry("660x440")
