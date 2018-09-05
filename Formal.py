@@ -297,7 +297,8 @@ class Window(Frame):
         self.Choice = [
             "AAPL",
             "AMZN",
-            "MSFT"
+            "MSFT",
+            "NKE"
         ]
         self.var.set(self.Choice[0])
         self.w = OptionMenu(self.master, self.var, *self.Choice)  # Drop Down Menu
@@ -391,7 +392,7 @@ class HelpPage(Frame):
             self.About()
 
     def HelpStock(self):
-        self.LabelHS = Label(self.master,text="Ticker Information \n AAPL = APPLE \n AMZN = AMAZON \n MSFT = MICROSOFT" , font=("Calibri", 12))
+        self.LabelHS = Label(self.master,text="Ticker Information \n AAPL = APPLE \n AMZN = AMAZON \n MSFT = MICROSOFT \n NKE = NIKE" , font=("Calibri", 12))
         self.LabelHS.place(x=300,y=150)
 
     def HelpTwitter(self):
