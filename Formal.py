@@ -246,6 +246,7 @@ class Window(Frame):
     def main_window(self):
         self.master.title("Main")
         self.master.configure(background='snow', highlightbackground='light steel blue')
+        #self.image = PhotoImage(Image.open(""))
 
         self.canvas = Canvas(root,width=670,height=450)
         self.canvas.pack()
@@ -276,6 +277,9 @@ class Window(Frame):
         self.EntryTQ.place(x=360,y=130)
         self.ButtonTQ.place(x=360,y=170)
 
+        self.LabelWP = Label(self.master, text="Welcome To Stock/Sentiment", font=("Calibri", 14), underline=True)
+        self.LabelWP.place(x=50, y=10)
+
     #def DisplayOS(self):
         #self.LabelOS = Label(self.master, text='Overall Sentiment: ' + str(OverallSentiment), font=("Calibri", 14))
         #self.LabelOS.place(x=360, y=300)
@@ -299,6 +303,7 @@ class Window(Frame):
 
         except:
             print("Error")
+
 
 root = Tk()
 root.geometry("660x440")
