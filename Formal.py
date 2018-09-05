@@ -18,8 +18,8 @@ access_token_secret = 'i2x3zhDRqgEAjyuP9puLBMLR0bLDje63rPeDIqDi1J1lY'
 
 Quandl_API = "9AK1N1LNy7PzHefyRR9w"
 
-global positiveEmojiList
-global negativeEmojiList
+global TotalPosTweets
+global TotalNegTweets
 
 positiveEmojiList = [':smile:', ':simple_smile:', ':laughing:', ':blush:',
                      ':smiley:', ':relaxed:', ':heart_eyes:', ':grin:',
@@ -38,7 +38,7 @@ class Twitter(object):
         self.auth = OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token, access_token_secret)
         self.api = API(self.auth)
-        self.MainLoop()
+
 
     def Remove_URL(self, tweet):
 
@@ -110,7 +110,7 @@ class Twitter(object):
         return posWordCounter, negWordCounter
 
     def FrequencyTables(self, CleanTweet):
-
+        global OverallTotal
         positiveTweets = 0
         negativeTweets = 0
 
@@ -122,24 +122,32 @@ class Twitter(object):
             print("Positive Tweet", OverallTotal)
         elif OverallTotal < 0:
             print("Negative Tweet", OverallTotal)
+
         else:
             print("Neutral")
 
-        return positiveTweets, negativeTweets
+        return positiveTweets, negativeTweets,OverallTotal
+
 
     def FindCorrelation(self):
 
         closeValues = Data['Close'].get_values()
-        #t = ((statistics.mean(x) - statistics.mean(y)) / (math.sqrt((statistics.stdev(x) ^ 2 / N)) + (statistics.stdev(y) ^ 2 / n)))
-        ##Student T-test - x - Sample 1, y-Sample 2 , N is sample 1, n is sample 2
+        x = closeValues
+        y = OverallTotal
+        N = 50
+        n = 50
+        t = ((statistics.mean(x) - statistics.mean(y)) / (math.sqrt(((statistics.stdev(x) ^ 2) / N)) + ((statistics.stdev(y) ^ 2)/ n)))
+        #Student T-test - x - Sample 1, y-Sample 2 , N is sample 1, n is sample 2
 
-    def MainLoop(self):
-
-        search = Cursor(self.api.search, q='#westbrook', lang='en', count=20)
+    def Main(self):
+        search = Cursor(self.api.search, q='#'+str(query), lang='en', count=20)
         counterOfTweets = 0
+        TotalPosTweets = 0
+        TotalNegTweets = 0
+        TotalNeuTweets = 0
 
         try:
-            for tweet in search.items(7):
+            for tweet in search.items(50):
                 counterOfTweets += 1
                 CleanTweet = self.Remove_URL(tweet)
                 CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
@@ -148,14 +156,28 @@ class Twitter(object):
                 countNumbers = self.FrequencyTables(CleanTweet)
 
                 print("noEmoji:", counterOfTweets, CleanTweetNoEmoji, CountEmoji, classifyWords, countNumbers)
+                if OverallTotal > 0:
+                    TotalPosTweets += 1
+                elif OverallTotal < 0:
+                    TotalNegTweets += 1
+                else:
+                    TotalNeuTweets += 1
 
+            print(TotalPosTweets,TotalNegTweets)
+            global OverallSentiment
+            OverallSentiment = ((TotalPosTweets-TotalNegTweets)/(TotalPosTweets+TotalNegTweets+TotalNeuTweets))
+            print("Overall the Total Sentiment of 50 tweets is:",OverallSentiment)
+            if OverallSentiment > 0:
+                print("Hence , Positive")
+            elif OverallSentiment < 0:
+                print("Hence, Negative")
+            else:
+                print("Hence, Neutral")
 
         except error.TweepError as e:
             print(e.reason)
             print("error")
 
-
-Twitter()
 
 class Stock(object):
 
@@ -171,10 +193,32 @@ class Stock(object):
             data = quandl.get('WIKI/'+str(stockentry), rows=50)
             Data = data
             self.DisplayStockGraph()
-            #self.Twitter.FindCorrelation()
+            self.Twitter.FindCorrelation()
 
         except:
             pass
+
+    def RSIFunction(self):
+        """RSI function : RSI = 100 - (100/1+RS)
+        Where RS = Average Gain/Average LOSS"""
+
+        Close = Data['Close'].get_values()
+        print(Close)
+        diffdelta = Close.diff()
+        print(diffdelta)
+        diffdelta = diffdelta[1:]
+        print(diffdelta)#Gets rid of the first row, as it has no upper row to calculate differences
+        up, down = diffdelta.copy(), diffdelta.copy()
+        up[up < 0] = 0
+        down[down > 0] = 0
+
+        rollmeanup = up.rolling(14).mean()
+        rollmeandown = down.rolling(14).mean()
+
+        print(rollmeanup)
+        RS = rollmeanup/rollmeandown
+        RSI = 100.0 - (100.0 / (1.0 + RS))
+        print(RSI)                          #NEEDS FIXING
 
 
     def DisplayStockGraph(self):
@@ -188,6 +232,7 @@ class Stock(object):
         plt.plot(Data['MA50'], label="Moving Average")
         plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand",borderaxespad=0.)  # Line of code taken from https://matplotlib.org/users/legend_guide.html
         plt.show()
+        self.RSIFunction()
 
 class Window(Frame):
 
@@ -196,9 +241,9 @@ class Window(Frame):
         self.master = master
         self.main_window()
         self.Stock = Stock()
+        self.Twitter = Twitter()
 
     def main_window(self):
-
         self.master.title("Main")
         self.master.configure(background='snow', highlightbackground='light steel blue')
 
@@ -231,6 +276,10 @@ class Window(Frame):
         self.EntryTQ.place(x=360,y=130)
         self.ButtonTQ.place(x=360,y=170)
 
+    #def DisplayOS(self):
+        #self.LabelOS = Label(self.master, text='Overall Sentiment: ' + str(OverallSentiment), font=("Calibri", 14))
+        #self.LabelOS.place(x=360, y=300)
+
     def CompanyEntry(self):
         """Retrives Entry of USER"""
         global stockentry
@@ -242,8 +291,14 @@ class Window(Frame):
             print("Error")
 
     def TwitterQueryEntry(self):
-        query = self.EntryTQ.get()
-        print(query)
+        global query
+        try:
+            query = self.EntryTQ.get()
+            print(query)
+            self.Twitter.Main()
+
+        except:
+            print("Error")
 
 root = Tk()
 root.geometry("660x440")
