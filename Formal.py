@@ -6,16 +6,21 @@ import math
 import quandl
 from tkinter import *
 import numpy as np
+
+import got3
+
 import matplotlib
 from mpl_finance import candlestick_ohlc
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.animation as animation
 from matplotlib import *
 import datetime
+
 consumer_key = 'kgfbFJJwwp3I2gHyT1ibNVvPJ'
 consumer_secret = 'AoNjgNDvRn528ZnMG1funqEXeTZ760ZX7JGAmAgkKskrkzWNVp'
-access_token = '1017368312081154048-MQnLaHAveFccgzDlHBXyiwWBSSWSXc'
+access_token_key = '1017368312081154048-MQnLaHAveFccgzDlHBXyiwWBSSWSXc'
 access_token_secret = 'i2x3zhDRqgEAjyuP9puLBMLR0bLDje63rPeDIqDi1J1lY'
 
 Quandl_API = "9AK1N1LNy7PzHefyRR9w"
@@ -31,16 +36,17 @@ positiveEmojiList = [':smile:', ':simple_smile:', ':laughing:', ':blush:',
 
 negativeEmojiList = [':worried:', ':frowning:', ':anguished:', ':grimacing:',
                      ':disappointed_relieved:', ':unamused:', ':fearful:', ':sob:',
-                     ':cry:', ':angry:', ':rage:', ':frowning:', ':man_shrugging:', ':face_screaming_in_fear:']
+                     ':cry:', ':angry:', ':rage:', ':frowning:', ':man_shrugging:', ':face_screaming_in_fear:',':crying_face:']
 
 
 class Twitter(object):
 
     def __init__(self):
         self.auth = OAuthHandler(consumer_key, consumer_secret)
-        self.auth.set_access_token(access_token, access_token_secret)
+        self.auth.set_access_token(access_token_key, access_token_secret)
         self.api = API(self.auth)
 
+        #self.api = TwitterAPI(consumer_key,consumer_secret,access_token_key,access_token_secret)
 
     def Remove_URL(self, tweet):
 
@@ -87,8 +93,7 @@ class Twitter(object):
         posWordCounter = 0
         negWordCounter = 0
 
-        PosFile = open(
-            "PositiveWords.txt")  # PositiveWord List extracted from : http://ptrckprry.com/course/ssd/data/positive-words.txt
+        PosFile = open("PositiveWords.txt")  # PositiveWord List extracted from : http://ptrckprry.com/course/ssd/data/positive-words.txt
         NegFile = open("NegativeWords.txt")
 
         wordlist = []
@@ -146,28 +151,49 @@ class Twitter(object):
         x = 0
         y = 0
         if date == 1:
-            print("Jan")
-            x = datetime.datetime(2018,1,1)
-            y = datetime.datetime(2018,1,31)
+            y = datetime.datetime.today() - datetime.timedelta(days=7)
+            x = datetime.datetime.today() - datetime.timedelta(days=6)
         elif date == 2:
-            print("Feb")
-            x = datetime.datetime(2018,2,1)
-            y = datetime.datetime(2018,2,28)
+            x = datetime.datetime.today() - datetime.timedelta(days=6)
+            y = datetime.datetime.today() - datetime.timedelta(days=5)
+        elif date == 3:
+            x = datetime.datetime.today() - datetime.timedelta(days=5)
+            y = datetime.datetime.today() - datetime.timedelta(days=4)
+        if date == 1:
+            x = datetime.datetime.today() - datetime.timedelta(days=4)
+            y = datetime.datetime.today() - datetime.timedelta(days=3)
+        elif date == 2:
+            x = datetime.datetime.today() - datetime.timedelta(days=3)
+            y = datetime.datetime.today() - datetime.timedelta(days=2)
+        elif date == 3:
+            x = datetime.datetime.today() - datetime.timedelta(days=2)
+            y = datetime.datetime.today() - datetime.timedelta(days=1)
         else:
-            print("March")
-            x = datetime.datetime(2018,3,1)
-            y = datetime.datetime(2018,3,31)
+            x = datetime.datetime.today()
 
-        search = Cursor(self.api.search, q='#westbrook', lang='en', count=20)
+        print(x)
+
+        startDate = datetime.datetime(2018, 9, 10,0, 0, 0)
+        endDate = datetime.datetime(2018, 9, 17, 0, 0, 0)
+
+
+        search = Cursor(self.api.search, q='#westbrook', lang='en')
+
+        #search = got3.manager.TweetCriteria().setQuerySearch('westbrook').setSince("2018-01-01").setUntil("2018-01-31")
+        #AllTweets = got3.manager.TweetManager.getTweets(search)
+
+
         counterOfTweets = 0
         TotalPosTweets = 0
         TotalNegTweets = 0
         TotalNeuTweets = 0
 
         try:
-            for tweet in search.items(50):
-                if tweet.created_at < y and tweet.created_at > x: #NEEDS fixing
+            for tweet in search.items(100):
+                if tweet.created_at < endDate and tweet.created_at > startDate:
                     print(tweet)
+                    print(tweet.text)
+
                     counterOfTweets += 1
                     CleanTweet = self.Remove_URL(tweet)
                     CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
@@ -175,15 +201,14 @@ class Twitter(object):
                     classifyWords = self.ClassifyWords(CleanTweet)
                     countNumbers = self.FrequencyTables(CleanTweet)
 
-                    print("noEmoji:", counterOfTweets, CleanTweetNoEmoji, CountEmoji, classifyWords, countNumbers)
+                    print("noEmoji:", counterOfTweets,CleanTweet, CleanTweetNoEmoji, CountEmoji, classifyWords, countNumbers)
                     if OverallTotal > 0:
                         TotalPosTweets += 1
                     elif OverallTotal < 0:
                         TotalNegTweets += 1
                     else:
                         TotalNeuTweets += 1
-                else:
-                    print("NOPE")
+
             print(TotalPosTweets,TotalNegTweets)
 
             global OverallSentiment
@@ -213,8 +238,12 @@ class Stock(object):
         try:
             print(stockentry)
             global Data
-            data = quandl.get('WIKI/'+str(stockentry), rows=50)
+
+            data = quandl.get('WIKI/' + str(stockentry), rows=50)
+            #data = quandl.get('EOD/'+str(stockentry),rows=7)
+            print(data)
             Data = data
+
             self.DisplayStockGraph()
             self.Twitter.FindCorrelation()
 
@@ -226,21 +255,31 @@ class Stock(object):
         cx = float(event.xdata)
         global date
         date = 0
-        if cx >= 734670 and cx < 736730:
+        if cx > 736942 and cx < 736944:
             date = 1
-        elif cx > 736730 and cx < 736760:
+        elif cx > 736943 and cx < 736945:
             date = 2
-        else:
+        elif cx > 736944 and cx < 736946:
             date = 3
+        if cx >= 736945 and cx < 736947:
+            date = 4
+        elif cx > 736946 and cx < 736948:
+            date = 5
+        elif cx > 736947 and cx < 736949:
+            date = 6
+        else:
+            date = 7
+
+        print(float(cx),date)
 
         self.Twitter.Main()
 
     def DisplayStockGraph(self):
         plt.style.use('ggplot')
 
-        Data['MA50'] = Data['Close'].rolling(7).mean()#Creates A 7-Day Moving Average
-        MovingAverage = Data['Close'].rolling(7).mean()
-        StandardDeviation = Data['Close'].rolling(7).std()
+        Data['MA50'] = Data['Close'].rolling(3).mean()#Creates A 7-Day Moving Average
+        MovingAverage = Data['Close'].rolling(3).mean()
+        StandardDeviation = Data['Close'].rolling(3).std()
         Data['UpBB'] = MovingAverage + (2 * StandardDeviation) #Bollinger Bands Indicator - Upper Boundary
         Data['LowBB'] = MovingAverage - (2 * StandardDeviation) #Bollinger Bands Indicator- Lower Boundary
 
@@ -250,22 +289,26 @@ class Stock(object):
         ax = fig.add_subplot(2, 1, 1)
         Data['Date'] = Data.index.map(mdates.date2num)
         plt.plot(Data['Close'], Label="Close",color="green")
+        plt.pause(0.05)
         plt.plot(Data['MA50'], label="Moving Average",color="blue")
+        plt.pause(0.05)
         plt.plot(Data['UpBB'], Label="Upper Bollinger Band",color="red")
+        plt.pause(0.05)
         plt.plot(Data['LowBB'], Label="Lower Bollinger Band",color="grey")
+        plt.pause(0.05)
         plt.xlabel("Date")
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         plt.legend(loc='best')
 
         ax2 = fig.add_subplot(2, 1, 2)
         Data['Date'] = Data.index.map(mdates.date2num)
         candlestickData = Data[['Date', 'Open', 'High', 'Low', 'Close']]
-        candlestick_ohlc(ax2, candlestickData.values, width=.6, colorup='green', colordown='red')
+        candlestick_ohlc(ax2, candlestickData.values, width=.7, colorup='green', colordown='red')
         plt.xlabel("Date")
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         fig.canvas.mpl_connect('button_press_event',self.GraphClick)
+        ax.get_shared_x_axes().join(ax,ax2)
         plt.show(ax)
-
 
 
 class Window(Frame):
