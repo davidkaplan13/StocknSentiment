@@ -28,6 +28,7 @@ Quandl_API = "9AK1N1LNy7PzHefyRR9w"
 global TotalPosTweets
 global TotalNegTweets
 
+
 positiveEmojiList = [':smile:', ':simple_smile:', ':laughing:', ':blush:',
                      ':smiley:', ':relaxed:', ':heart_eyes:', ':grin:',
                      ':grinning:', ':kissing:', ':sweat_smile:', ':joy:',
@@ -45,8 +46,21 @@ class Twitter(object):
         self.auth = OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token_key, access_token_secret)
         self.api = API(self.auth)
-
         #self.api = TwitterAPI(consumer_key,consumer_secret,access_token_key,access_token_secret)
+
+    def Trends(self):
+        global TopTopics
+        Trends = self.api.trends_place(1) #24554868 WOEID for England #23424977 for USA
+        Trend_Data = Trends[0]
+        Trend_Data = Trend_Data['trends']
+        topicname = [Trend_Data['name'] for Trend_Data in Trend_Data]
+        TopTopics = list()
+        for i in topicname[34:40]:
+            TopTopics.append(i)
+
+        TopTopics = '\n'.join(TopTopics)
+        print(TopTopics)
+
 
     def Remove_URL(self, tweet):
 
@@ -96,9 +110,11 @@ class Twitter(object):
         PosFile = open("PositiveWords.txt")  # PositiveWord List extracted from : http://ptrckprry.com/course/ssd/data/positive-words.txt
         NegFile = open("NegativeWords.txt")
 
+
         wordlist = []
         try:
             for words in CleanTweet.split():
+                words.replace("#","") #Removes URL for analysis of words
                 wordlist.append(words.lower())
 
             for i in range(0, len(wordlist)):
@@ -107,11 +123,14 @@ class Twitter(object):
                     i += 1
 
                 elif wordlist[i] in NegFile.read():
+                    print(wordlist[i])
                     negWordCounter += 1
                     i += 1
 
                 else:
                     i += 1
+
+
         except:
             print("No Such String")
 
@@ -177,7 +196,8 @@ class Twitter(object):
         endDate = datetime.datetime(2018, 9, 17, 0, 0, 0)
 
 
-        search = Cursor(self.api.search, q='#westbrook', lang='en')
+        search = Cursor(self.api.search, q=('#'+str(query)), lang='en',count=2)
+
 
         #search = got3.manager.TweetCriteria().setQuerySearch('westbrook').setSince("2018-01-01").setUntil("2018-01-31")
         #AllTweets = got3.manager.TweetManager.getTweets(search)
@@ -189,25 +209,23 @@ class Twitter(object):
         TotalNeuTweets = 0
 
         try:
-            for tweet in search.items(100):
-                if tweet.created_at < endDate and tweet.created_at > startDate:
-                    print(tweet)
-                    print(tweet.text)
+            for tweet in search.items(20):
+                #if tweet.created_at < endDate and tweet.created_at > startDate
 
-                    counterOfTweets += 1
-                    CleanTweet = self.Remove_URL(tweet)
-                    CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
-                    CountEmoji = self.CountSentimentOfEmojis(CleanTweetNoEmoji)
-                    classifyWords = self.ClassifyWords(CleanTweet)
-                    countNumbers = self.FrequencyTables(CleanTweet)
+                counterOfTweets += 1
+                CleanTweet = self.Remove_URL(tweet)
+                CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
+                CountEmoji = self.CountSentimentOfEmojis(CleanTweetNoEmoji)
+                classifyWords = self.ClassifyWords(CleanTweet)
+                countNumbers = self.FrequencyTables(CleanTweet)
 
-                    print("noEmoji:", counterOfTweets,CleanTweet, CleanTweetNoEmoji, CountEmoji, classifyWords, countNumbers)
-                    if OverallTotal > 0:
-                        TotalPosTweets += 1
-                    elif OverallTotal < 0:
-                        TotalNegTweets += 1
-                    else:
-                        TotalNeuTweets += 1
+                print("noEmoji:", counterOfTweets,CleanTweet, CleanTweetNoEmoji, CountEmoji, classifyWords, countNumbers)
+                if OverallTotal > 0:
+                    TotalPosTweets += 1
+                elif OverallTotal < 0:
+                    TotalNegTweets += 1
+                else:
+                    TotalNeuTweets += 1
 
             print(TotalPosTweets,TotalNegTweets)
 
@@ -238,9 +256,8 @@ class Stock(object):
         try:
             print(stockentry)
             global Data
-
-            data = quandl.get('WIKI/' + str(stockentry), rows=50)
-            #data = quandl.get('EOD/'+str(stockentry),rows=7)
+            #data = quandl.get('WIKI/' + str(stockentry), rows=50)
+            data = quandl.get('EOD/'+str(stockentry),rows=7)
             print(data)
             Data = data
 
@@ -316,26 +333,28 @@ class Window(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
-        self.main_window()
         self.Stock = Stock()
         self.Twitter = Twitter()
+        self.main_window()
 
     def main_window(self):
         self.master.title("Main")
         self.master.configure(background='snow', highlightbackground='light steel blue')
         #self.image = PhotoImage(Image.open(""))
 
+        self.Twitter.Trends()
+
         self.canvas = Canvas(root,width=670,height=450)
         self.canvas.pack()
 
         self.line = self.canvas.create_line(329,-10,329,450,fill='light steel blue') #Seprates the Main window - Left=Stock Right=Twitter Query
 
-        self.LabelT = Label(self.master, text="Select Company:", font=("Calibri", 14))
+        self.LabelT = Label(self.master, text="Select Company:", font=("Avenir", 14))
         self.var = StringVar(self.master)
 
-        self.LabelTQ = Label(self.master,text='Twitter Query:',font=("Calibri",14))
+        self.LabelTQ = Label(self.master,text='Twitter Query:',font=("Avenir",14))
         self.EntryTQ = Entry(self.master,borderwidth=2)
-        self.ButtonTQ = Button(self.master, text="Enter", command=self.TwitterQueryEntry)
+        self.ButtonTQ = Button(self.master, text="Enter", font=("Avenir",14),command=self.TwitterQueryEntry)
 
         self.Choice = [
             "AAPL",
@@ -345,18 +364,26 @@ class Window(Frame):
         ]
         self.var.set(self.Choice[0])
         self.w = OptionMenu(self.master, self.var, *self.Choice)  # Drop Down Menu
-        self.ButtonT = Button(self.master, text="Enter", command=self.CompanyEntry)
+        self.ButtonT = Button(self.master, text="Enter", font=("Avenir",14),command=self.CompanyEntry)
 
-        self.LabelT.place(x=30, y=100)
-        self.w.place(x=30, y=130)
-        self.ButtonT.place(x=30, y=170)
+        self.LabelT.place(x=360, y=100)
+        self.w.place(x=360, y=130)
+        self.ButtonT.place(x=360, y=170)
 
-        self.LabelTQ.place(x=360,y=100)
-        self.EntryTQ.place(x=360,y=130)
-        self.ButtonTQ.place(x=360,y=170)
+        self.LabelTQ.place(x=30,y=100)
+        self.EntryTQ.place(x=30,y=130)
+        self.ButtonTQ.place(x=30,y=170)
 
-        self.LabelWP = Label(self.master, text="Welcome To Stock/Sentiment", font=("Calibri", 14), underline=True)
-        self.LabelWP.place(x=50, y=10)
+        self.LabelWP = Label(self.master, text="Welcome To Stock/Sentiment", font=("Avenir", 16))
+        self.LabelGU = Label(self.master, text="Please Enter the Twitter Query First",font=("Avenir",14))
+        self.LabelSH = Label(self.master, text="Press Help to view Ticker Infromation", font=("Avenir",14))
+        self.LabelTT = Label(self.master, text="Hot Topics In Twitter", font=("Avenir",14))
+        self.LabelTt = Label(self.master, text=(TopTopics),font=("Avenir",14))
+        self.LabelTt.place(x=30,y=300)
+        self.LabelTT.place(x=30,y=270)
+        self.LabelSH.place(x=360,y=50)
+        self.LabelGU.place(x=30,y=50)
+        self.LabelWP.place(x=30, y=10)
 
         self.ButtonHP = Button(self.master,text="Help",command=self.GoToHelpPage)
         self.ButtonHP.place(x=600,y=10)
@@ -381,7 +408,7 @@ class Window(Frame):
         try:
             query = self.EntryTQ.get()
             print(query)
-            self.Twitter.Main()
+            #self.Twitter.Main()
 
         except:
             print("Error")
@@ -435,12 +462,12 @@ class HelpPage(Frame):
             self.About()
 
     def HelpStock(self):
-        self.LabelHS = Label(self.master,text="Ticker Information \n AAPL = APPLE \n AMZN = AMAZON \n MSFT = MICROSOFT \n NKE = NIKE" , font=("Calibri", 12))
+        self.LabelHS = Label(self.master,text="Ticker Information \n AAPL = APPLE \n AMZN = AMAZON \n MSFT = MICROSOFT \n NKE = NIKE" , font=("Avenir", 12))
         self.LabelHS.place(x=300,y=150)
 
     def HelpTwitter(self):
 
-        self.LabelHT = Label(self.master,text="Enter your Query and Hit Enter Button \n This query will used to pull Twitter Data from the Database",font=("Calibri",12))
+        self.LabelHT = Label(self.master,text="Enter your Query and Hit Enter Button \n This query will used to pull Twitter Data from the Database",font=("Avenir",12))
         self.LabelHT.place(x=300,y=100)
 
     def About(self):
@@ -451,3 +478,4 @@ root = Tk()
 root.geometry("660x440")
 app = Window(root)
 root.mainloop()
+
