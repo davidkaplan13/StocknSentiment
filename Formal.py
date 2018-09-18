@@ -7,14 +7,12 @@ import quandl
 from tkinter import *
 import numpy as np
 
-import got3
 
 import matplotlib
 from mpl_finance import candlestick_ohlc
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import matplotlib.animation as animation
 from matplotlib import *
 import datetime
 
@@ -27,6 +25,7 @@ Quandl_API = "9AK1N1LNy7PzHefyRR9w"
 
 global TotalPosTweets
 global TotalNegTweets
+global query
 
 
 positiveEmojiList = [':smile:', ':simple_smile:', ':laughing:', ':blush:',
@@ -46,11 +45,10 @@ class Twitter(object):
         self.auth = OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token_key, access_token_secret)
         self.api = API(self.auth)
-        #self.api = TwitterAPI(consumer_key,consumer_secret,access_token_key,access_token_secret)
 
     def Trends(self):
         global TopTopics
-        Trends = self.api.trends_place(1) #24554868 WOEID for England #23424977 for USA
+        Trends = self.api.trends_place(1)
         Trend_Data = Trends[0]
         Trend_Data = Trend_Data['trends']
         topicname = [Trend_Data['name'] for Trend_Data in Trend_Data]
@@ -59,6 +57,7 @@ class Twitter(object):
             TopTopics.append(i)
 
         TopTopics = '\n'.join(TopTopics)
+        #TopTopics will be displayed in the tkinter page
         print(TopTopics)
 
 
@@ -167,30 +166,7 @@ class Twitter(object):
         #Student T-test - x - Sample 1, y-Sample 2 , N is sample 1, n is sample 2
 
     def Main(self):
-        x = 0
-        y = 0
-        if date == 1:
-            y = datetime.datetime.today() - datetime.timedelta(days=7)
-            x = datetime.datetime.today() - datetime.timedelta(days=6)
-        elif date == 2:
-            x = datetime.datetime.today() - datetime.timedelta(days=6)
-            y = datetime.datetime.today() - datetime.timedelta(days=5)
-        elif date == 3:
-            x = datetime.datetime.today() - datetime.timedelta(days=5)
-            y = datetime.datetime.today() - datetime.timedelta(days=4)
-        if date == 1:
-            x = datetime.datetime.today() - datetime.timedelta(days=4)
-            y = datetime.datetime.today() - datetime.timedelta(days=3)
-        elif date == 2:
-            x = datetime.datetime.today() - datetime.timedelta(days=3)
-            y = datetime.datetime.today() - datetime.timedelta(days=2)
-        elif date == 3:
-            x = datetime.datetime.today() - datetime.timedelta(days=2)
-            y = datetime.datetime.today() - datetime.timedelta(days=1)
-        else:
-            x = datetime.datetime.today()
 
-        print(x)
 
         startDate = datetime.datetime(2018, 9, 10,0, 0, 0)
         endDate = datetime.datetime(2018, 9, 17, 0, 0, 0)
@@ -209,7 +185,7 @@ class Twitter(object):
         TotalNeuTweets = 0
 
         try:
-            for tweet in search.items(20):
+            for tweet in search.items(100):
                 #if tweet.created_at < endDate and tweet.created_at > startDate
 
                 counterOfTweets += 1
@@ -231,7 +207,7 @@ class Twitter(object):
 
             global OverallSentiment
             OverallSentiment = ((TotalPosTweets-TotalNegTweets)/(TotalPosTweets+TotalNegTweets+TotalNeuTweets))
-            print("Overall the Total Sentiment of 50 tweets is:",OverallSentiment)
+            print("Overall the Total Sentiment of",str(counterOfTweets),"tweets is:",OverallSentiment)
 
             if OverallSentiment > 0:
                 print("Hence , Positive")
@@ -270,24 +246,7 @@ class Stock(object):
     def GraphClick(self,event):
         """Finds Location of CLICK x-data"""
         cx = float(event.xdata)
-        global date
-        date = 0
-        if cx > 736942 and cx < 736944:
-            date = 1
-        elif cx > 736943 and cx < 736945:
-            date = 2
-        elif cx > 736944 and cx < 736946:
-            date = 3
-        if cx >= 736945 and cx < 736947:
-            date = 4
-        elif cx > 736946 and cx < 736948:
-            date = 5
-        elif cx > 736947 and cx < 736949:
-            date = 6
-        else:
-            date = 7
-
-        print(float(cx),date)
+        print(float(cx))
 
         self.Twitter.Main()
 
@@ -344,8 +303,8 @@ class Window(Frame):
 
         self.Twitter.Trends()
 
-        self.canvas = Canvas(root,width=670,height=450)
-        self.canvas.pack()
+        self.canvas = Canvas(self.master,width=670,height=450)
+        self.canvas.grid(row=0,column=0,sticky='nsew')
 
         self.line = self.canvas.create_line(329,-10,329,450,fill='light steel blue') #Seprates the Main window - Left=Stock Right=Twitter Query
 
@@ -379,8 +338,9 @@ class Window(Frame):
         self.LabelSH = Label(self.master, text="Press Help to view Ticker Infromation", font=("Avenir",14))
         self.LabelTT = Label(self.master, text="Hot Topics In Twitter", font=("Avenir",14))
         self.LabelTt = Label(self.master, text=(TopTopics),font=("Avenir",14))
+
         self.LabelTt.place(x=30,y=300)
-        self.LabelTT.place(x=30,y=270)
+        self.LabelTT.place(x=45,y=270)
         self.LabelSH.place(x=360,y=50)
         self.LabelGU.place(x=30,y=50)
         self.LabelWP.place(x=30, y=10)
@@ -404,8 +364,8 @@ class Window(Frame):
             print("Error")
 
     def TwitterQueryEntry(self):
-        global query
         try:
+            global query
             query = self.EntryTQ.get()
             print(query)
             #self.Twitter.Main()
@@ -478,4 +438,3 @@ root = Tk()
 root.geometry("660x440")
 app = Window(root)
 root.mainloop()
-
