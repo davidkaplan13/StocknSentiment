@@ -11,6 +11,9 @@ import numpy as np
 import matplotlib
 from mpl_finance import candlestick_ohlc
 matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.figure
+import matplotlib.patches
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import *
@@ -185,8 +188,11 @@ class Twitter(object):
         TotalNeuTweets = 0
 
         try:
-            for tweet in search.items(100):
+            for tweet in search.items(20):
                 #if tweet.created_at < endDate and tweet.created_at > startDate
+
+                with open("Parsed_Tweets.txt",'a') as a:
+                    a.write(tweet.text)
 
                 counterOfTweets += 1
                 CleanTweet = self.Remove_URL(tweet)
@@ -237,55 +243,12 @@ class Stock(object):
             print(data)
             Data = data
 
-            self.DisplayStockGraph()
-            self.Twitter.FindCorrelation()
+            return Data
+            #self.DisplayStockGraph()
+            #self.Twitter.FindCorrelation()
 
         except:
             pass
-
-    def GraphClick(self,event):
-        """Finds Location of CLICK x-data"""
-        cx = float(event.xdata)
-        print(float(cx))
-
-        self.Twitter.Main()
-
-    def DisplayStockGraph(self):
-        plt.style.use('ggplot')
-
-        Data['MA50'] = Data['Close'].rolling(3).mean()#Creates A 7-Day Moving Average
-        MovingAverage = Data['Close'].rolling(3).mean()
-        StandardDeviation = Data['Close'].rolling(3).std()
-        Data['UpBB'] = MovingAverage + (2 * StandardDeviation) #Bollinger Bands Indicator - Upper Boundary
-        Data['LowBB'] = MovingAverage - (2 * StandardDeviation) #Bollinger Bands Indicator- Lower Boundary
-
-        fig = plt.figure(figsize=(9, 9))
-        fig.suptitle(stockentry + ' STOCK DATA', fontsize=12)
-
-        ax = fig.add_subplot(2, 1, 1)
-        Data['Date'] = Data.index.map(mdates.date2num)
-        plt.plot(Data['Close'], Label="Close",color="green")
-        plt.pause(0.05)
-        plt.plot(Data['MA50'], label="Moving Average",color="blue")
-        plt.pause(0.05)
-        plt.plot(Data['UpBB'], Label="Upper Bollinger Band",color="red")
-        plt.pause(0.05)
-        plt.plot(Data['LowBB'], Label="Lower Bollinger Band",color="grey")
-        plt.pause(0.05)
-        plt.xlabel("Date")
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-        plt.legend(loc='best')
-
-        ax2 = fig.add_subplot(2, 1, 2)
-        Data['Date'] = Data.index.map(mdates.date2num)
-        candlestickData = Data[['Date', 'Open', 'High', 'Low', 'Close']]
-        candlestick_ohlc(ax2, candlestickData.values, width=.7, colorup='green', colordown='red')
-        plt.xlabel("Date")
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-        fig.canvas.mpl_connect('button_press_event',self.GraphClick)
-        ax.get_shared_x_axes().join(ax,ax2)
-        plt.show(ax)
-
 
 class Window(Frame):
 
@@ -346,17 +309,17 @@ class Window(Frame):
         self.LabelWP.place(x=30, y=10)
 
         self.ButtonHP = Button(self.master,text="Help",command=self.GoToHelpPage)
+        self.ButtonVG = Button(self.master,text="View Graph",command=self.GoToStockPage)
+        self.ButtonVG.place(x=350,y=350)
         self.ButtonHP.place(x=600,y=10)
 
-
-    #def DisplayOS(self):
-        #self.LabelOS = Label(self.master, text='Overall Sentiment: ' + str(OverallSentiment), font=("Calibri", 14))
-        #self.LabelOS.place(x=360, y=300)
 
     def CompanyEntry(self):
         """Retrives Entry of USER"""
         global stockentry
         try:
+            self.LabelCP = Label(self.master,text="Pulling Tweets and Creating Stock Graph",font=("Avenir",12))
+            self.LabelCP.place(x=350,y=400)
             stockentry = self.var.get()
             self.Stock.StockData()
 
@@ -368,7 +331,7 @@ class Window(Frame):
             global query
             query = self.EntryTQ.get()
             print(query)
-            #self.Twitter.Main()
+            self.Twitter.Main()
 
         except:
             print("Error")
@@ -376,6 +339,10 @@ class Window(Frame):
     def GoToHelpPage(self):
         self.helppage= Toplevel(self.master)
         self.app = HelpPage(self.helppage)
+
+    def GoToStockPage(self):
+        self.stockpage = Toplevel(self.master)
+        self.app = StockPage(self.stockpage)
 
 class HelpPage(Frame):
 
@@ -405,7 +372,7 @@ class HelpPage(Frame):
         self.w.place(x=30, y=130)
         self.buttonx.place(x=30, y=170)
 
-        self.canvas = Canvas(root, width=670, height=450)
+        self.canvas = Canvas(root, width=1000, height=1000)
         self.canvas.pack()
 
         self.line = self.canvas.create_line(329, -10, 329, 450, fill='light steel blue')
@@ -432,6 +399,58 @@ class HelpPage(Frame):
 
     def About(self):
         pass
+
+class StockPage(Frame):
+
+    def __init__(self,master=None):
+        Frame.__init__(self, master)
+        self.master = master
+        self.master.geometry("660x440")
+        self.Twitter = Twitter()
+        self.GraphStock()
+
+    def GraphStock(self):
+
+        self.master.title("Tweet and Graph Page")
+        s = []
+        with open("Parsed_Tweets.txt",'r') as r:
+            s.append(r.read())
+
+        self.LabelGO = Label(self.master,text=("Overall Sentiment of Tweets:",OverallSentiment),font=("Avenir",14))
+        self.LabelGO.place(x=50,y=100)
+
+        plt.style.use('ggplot')
+        Data['MA50'] = Data['Close'].rolling(3).mean()  # Creates A 7-Day Moving Average
+        MovingAverage = Data['Close'].rolling(3).mean()
+        StandardDeviation = Data['Close'].rolling(3).std()
+        Data['UpBB'] = MovingAverage + (2 * StandardDeviation)  # Bollinger Bands Indicator - Upper Boundary
+        Data['LowBB'] = MovingAverage - (2 * StandardDeviation)  # Bollinger Bands Indicator- Lower Boundary
+
+        fig = plt.figure(figsize=(9, 9))
+        fig.suptitle(stockentry + ' STOCK DATA', fontsize=12)
+
+        ax = fig.add_subplot(2, 1, 1)
+        Data['Date'] = Data.index.map(mdates.date2num)
+        plt.plot(Data['Close'], Label="Close", color="green")
+        plt.pause(0.05)
+        plt.plot(Data['MA50'], label="Moving Average", color="blue")
+        plt.pause(0.05)
+        plt.plot(Data['UpBB'], Label="Upper Bollinger Band", color="red")
+        plt.pause(0.05)
+        plt.plot(Data['LowBB'], Label="Lower Bollinger Band", color="grey")
+        plt.pause(0.05)
+        plt.xlabel("Date")
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+        plt.legend(loc='best')
+
+        ax2 = fig.add_subplot(2, 1, 2)
+        Data['Date'] = Data.index.map(mdates.date2num)
+        candlestickData = Data[['Date', 'Open', 'High', 'Low', 'Close']]
+        candlestick_ohlc(ax2, candlestickData.values, width=.7, colorup='green', colordown='red')
+        plt.xlabel("Date")
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+        ax.get_shared_x_axes().join(ax, ax2)
+        plt.show(ax)
 
 
 root = Tk()
