@@ -77,10 +77,10 @@ negativeEmojiList = [
     ':crying_face:'
 ]
 
-
 class Twitter(object):
+
     def __init__(self):
-        #
+        #=====Access Twitter Database by calling on the API Keys=====#
         self.auth = OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token_key, access_token_secret)
         self.api = API(self.auth)
@@ -273,12 +273,16 @@ class Twitter(object):
 
 
 class Stock(object):
+
     def __init__(self):
         quandl.ApiConfig.api_key = Quandl_API
         self.Twitter = Twitter()
         self.StockData()
 
     def StockData(self):
+        """
+            Pulls Stock Data via the Quandl API
+        """
         try:
             print(stockentry)
             global Data
@@ -296,6 +300,7 @@ class Stock(object):
 
 
 class Window(Frame):
+
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -307,7 +312,6 @@ class Window(Frame):
         self.master.title("Main")
         self.master.configure(
             background='snow', highlightbackground='light steel blue')
-        #self.image = PhotoImage(Image.open(""))
 
         self.Twitter.Trends()
 
@@ -368,7 +372,10 @@ class Window(Frame):
             font=("Avenir", 14),
             foreground='red')
         self.LabelTt = Label(
-            self.master, text=(TopTopics), font=("Avenir", 14),relief='groove')
+            self.master,
+            text=(TopTopics),
+            font=("Avenir", 14),
+            relief='groove')
 
         self.LabelTt.place(x=30, y=300)
         self.LabelTT.place(x=45, y=270)
@@ -388,9 +395,7 @@ class Window(Frame):
         global stockentry
         try:
             self.LabelCP = Label(
-                self.master,
-                text="Loading",
-                font=("Avenir", 12))
+                self.master, text="Loading", font=("Avenir", 12))
             self.LabelCP.place(x=350, y=400)
             stockentry = self.var.get()
             self.Stock.StockData()
@@ -418,6 +423,7 @@ class Window(Frame):
 
 
 class HelpPage(Frame):
+
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -481,6 +487,7 @@ class HelpPage(Frame):
 
 
 class StockPage(Frame):
+
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -496,31 +503,49 @@ class StockPage(Frame):
             s.append(r.read())
 
         print(OverallTotalToPlot)
-        day = datetime.datetime.now()
-        days = pd.date_range(
-            day,
-            day + datetime.timedelta(hours=24),
-            periods=len(OverallTotalToPlot))
+        today = datetime.datetime.now()
+        past_week = today - datetime.timedelta(days=7)
+        days = pd.date_range(past_week, today, periods=len(OverallTotalToPlot))
         df = pd.DataFrame({'date': days, 'values': OverallTotalToPlot})
-        df.set_index('date')
-        print(df.head())
+        df.set_index(['date'])
+        print(df)
 
         self.LabelGO = Label(
             self.master,
             text=("Overall Sentiment of Tweets:", str(OverallSentiment)),
             font=("Avenir", 14))
-        self.LabelGO.place(x=50, y=100)
+
+        self.LabelWI = Label(
+            self.master,
+            text=("Information About Indicators/Graph:"),
+            font=("Avenir", 14))
+        self.varc = StringVar(self.master)
+        self.Choices = ["Bollinger Bands", "Moving Average", "Candlestick"]
+        self.varc.set(self.Choices[0])
+        self.om = OptionMenu(self.master, self.varc,
+                             *self.Choices)  # Drop Down Menu
+        self.buttonx = Button(
+            self.master, text="Enter", command=self.GetEntryIndicator)
+
+        self.LabelWI.place(x=20, y=100)
+        self.om.place(x=20, y=130)
+        self.buttonx.place(x=20, y=170)
+
+        self.LabelGO.place(x=20, y=50)
 
         plt.style.use('ggplot')
-        Data['MA50'] = Data['Close'].rolling(
-            3).mean()  # Creates A 7-Day Moving Average
+        # Creates A 3-Day Moving Average
+        Data['MA50'] = Data['Close'].rolling(3).mean()
         MovingAverage = Data['Close'].rolling(3).mean()
+
+        # Calculates Standard Deviation on rolling mean
         StandardDeviation = Data['Close'].rolling(3).std()
-        Data['UpBB'] = MovingAverage + (
-            2 * StandardDeviation
-        )  # Bollinger Bands Indicator - Upper Boundary
-        Data['LowBB'] = MovingAverage - (
-            2 * StandardDeviation)  # Bollinger Bands Indicator- Lower Boundary
+
+        # Bollinger Bands Indicator - Upper Boundary
+        Data['UpBB'] = MovingAverage + (2 * StandardDeviation)
+
+        # Bollinger Bands Indicator- Lower Boundary
+        Data['LowBB'] = MovingAverage - (2 * StandardDeviation)
 
         fig = plt.figure(figsize=(9, 9))
         fig.suptitle(stockentry + ' STOCK DATA', fontsize=12)
@@ -556,7 +581,32 @@ class StockPage(Frame):
         ax3 = fig.add_subplot(2, 1, 2)
         ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         plt.plot(df['values'])
-        plt.show(ax3)
+        plt.show()
+
+    def GetEntryIndicator(self):
+        choice_entry = self.varc.get()
+        if choice_entry == 'Bollinger Bands':
+            self.LabelBB = Label(
+                self.master,
+                text=
+                ("Bollinger Bands: \nWhen the market is volatile, the bands widen.\n When the market is under a less volatile period, the bands contract. "
+                 ),
+                font=("Avenir", 14))
+            self.LabelBB.place(x=30, y=200)
+
+        elif choice_entry == 'Moving Average':
+            self.LabelMA = Label(
+                self.master,
+                text=("Moving Average is calculated by..."),
+                font=("Avenir", 14))
+            self.LabelMA.place(x=30, y=280)
+
+        else:
+            self.LabelCS = Label(
+                self.master,
+                text=("Candlestick Graph is generated by..."),
+                font=("Avenir", 14))
+            self.LabelCS.place(x=30, y=320)
 
 
 root = Tk()
