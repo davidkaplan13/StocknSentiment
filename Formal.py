@@ -1,4 +1,6 @@
 
+#============= Main Program ==================#
+
 #========== Imports (Python Modules)==========#
 
 from tweepy import *
@@ -18,8 +20,7 @@ import matplotlib.dates as mdates
 from matplotlib import *
 import datetime
 
-
-#========== API Keys (Tweepy and Quandl) ==========#
+#======== API Keys (Tweepy and Quandl) =========#
 
 consumer_key = 'kgfbFJJwwp3I2gHyT1ibNVvPJ'
 consumer_secret = 'AoNjgNDvRn528ZnMG1funqEXeTZ760ZX7JGAmAgkKskrkzWNVp'
@@ -34,6 +35,8 @@ global query
 
 global OverallTotalToPlot
 OverallTotalToPlot = []
+
+#========== Arrays(For Classification of Emojis) ==========#
 
 positiveEmojiList = [
     ':smile:', ':simple_smile:', ':laughing:', ':blush:', ':smiley:',
@@ -50,10 +53,12 @@ negativeEmojiList = [
     ':face_screaming_in_fear:', ':crying_face:'
 ]
 
+#
 
 class Twitter(object):
 
     def __init__(self):
+        #
         self.auth = OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token_key, access_token_secret)
         self.api = API(self.auth)
