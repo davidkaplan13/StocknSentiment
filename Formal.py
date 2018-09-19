@@ -1,4 +1,3 @@
-
 #============= Main Program ==================#
 
 #========== Imports (Python Modules)==========#
@@ -39,24 +38,47 @@ OverallTotalToPlot = []
 #========== Arrays(For Classification of Emojis) ==========#
 
 positiveEmojiList = [
-    ':smile:', ':simple_smile:', ':laughing:', ':blush:', ':smiley:',
-    ':relaxed:', ':heart_eyes:', ':grin:', ':grinning:', ':kissing:',
-    ':sweat_smile:', ':joy:', ':satisfied:', ':crown:',
-    'face_with_tears_of_joy', ':fire:', ':money_bag:', ':dollar_banknote:',
+    ':smile:',
+    ':simple_smile:',
+    ':laughing:',
+    ':blush:',
+    ':smiley:',
+    ':relaxed:',
+    ':heart_eyes:',
+    ':grin:',
+    ':grinning:',
+    ':kissing:',
+    ':sweat_smile:',
+    ':joy:',
+    ':satisfied:',
+    ':crown:',
+    'face_with_tears_of_joy',
+    ':fire:',
+    ':money_bag:',
+    ':dollar_banknote:',
     ':glowing_star:'
 ]
 
 negativeEmojiList = [
-    ':worried:', ':frowning:', ':anguished:', ':grimacing:',
-    ':disappointed_relieved:', ':unamused:', ':fearful:', ':sob:', ':cry:',
-    ':angry:', ':rage:', ':frowning:', ':man_shrugging:',
-    ':face_screaming_in_fear:', ':crying_face:'
+    ':worried:',
+    ':frowning:',
+    ':anguished:',
+    ':grimacing:',
+    ':disappointed_relieved:',
+    ':unamused:',
+    ':fearful:',
+    ':sob:',
+    ':cry:',
+    ':angry:',
+    ':rage:',
+    ':frowning:',
+    ':man_shrugging:',
+    ':face_screaming_in_fear:',
+    ':crying_face:'
 ]
 
-#
 
 class Twitter(object):
-
     def __init__(self):
         #
         self.auth = OAuthHandler(consumer_key, consumer_secret)
@@ -251,7 +273,6 @@ class Twitter(object):
 
 
 class Stock(object):
-
     def __init__(self):
         quandl.ApiConfig.api_key = Quandl_API
         self.Twitter = Twitter()
@@ -275,7 +296,6 @@ class Stock(object):
 
 
 class Window(Frame):
-
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -332,7 +352,8 @@ class Window(Frame):
         self.LabelWP = Label(
             self.master,
             text="Welcome To Stock/Sentiment",
-            font=("Avenir", 16))
+            font=("Avenir", 16),
+            foreground='blue')
         self.LabelGU = Label(
             self.master,
             text="Please Enter the Twitter Query First",
@@ -342,9 +363,12 @@ class Window(Frame):
             text="Press Help to view Ticker Infromation",
             font=("Avenir", 14))
         self.LabelTT = Label(
-            self.master, text="Hot Topics In Twitter", font=("Avenir", 14))
+            self.master,
+            text="Hot Topics In Twitter",
+            font=("Avenir", 14),
+            foreground='red')
         self.LabelTt = Label(
-            self.master, text=(TopTopics), font=("Avenir", 14))
+            self.master, text=(TopTopics), font=("Avenir", 14),relief='groove')
 
         self.LabelTt.place(x=30, y=300)
         self.LabelTT.place(x=45, y=270)
@@ -365,7 +389,7 @@ class Window(Frame):
         try:
             self.LabelCP = Label(
                 self.master,
-                text="Pulling Tweets and Creating Stock Graph",
+                text="Loading",
                 font=("Avenir", 12))
             self.LabelCP.place(x=350, y=400)
             stockentry = self.var.get()
@@ -394,7 +418,6 @@ class Window(Frame):
 
 
 class HelpPage(Frame):
-
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -458,7 +481,6 @@ class HelpPage(Frame):
 
 
 class StockPage(Frame):
-
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
