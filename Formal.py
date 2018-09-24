@@ -1,5 +1,10 @@
 #============= Main Program ==================#
+"""
+MAIN file. Program To be Run from here.
+External files include PostiveWords.txt and
+Negative words.txt
 
+"""
 #========== Imports (Python Modules)==========#
 
 from tweepy import *
@@ -35,7 +40,7 @@ global query
 global OverallTotalToPlot
 OverallTotalToPlot = []
 
-#========== Arrays(For Classification of Emojis) ==========#
+#===== Arrays(For Classification of Emojis) =====#
 
 positiveEmojiList = [
     ':smile:',
@@ -318,9 +323,14 @@ class Window(Frame):
         self.canvas = Canvas(self.master, width=670, height=450)
         self.canvas.grid(row=0, column=0, sticky='nsew')
 
-        self.line = self.canvas.create_line(
-            329, -10, 329, 450, fill='light steel blue'
+        self.line = self.canvas.create_rectangle(
+            329, -10, 332, 450, fill='light blue'
         )  #Seprates the Main window - Left=Stock Right=Twitter Query
+
+        self.rectangle = self.canvas.create_rectangle(
+            0,0,660,45,fill='IndianRed1')
+        self.rectangle_bottomn = self.canvas.create_rectangle(
+            0,405,660,440,fill='light blue')
 
         self.LabelT = Label(
             self.master, text="Select Company:", font=("Avenir", 14))
@@ -377,8 +387,8 @@ class Window(Frame):
             font=("Avenir", 14),
             relief='groove')
 
-        self.LabelTt.place(x=30, y=300)
-        self.LabelTT.place(x=45, y=270)
+        self.LabelTt.place(x=40, y=300)
+        self.LabelTT.place(x=40, y=270)
         self.LabelSH.place(x=360, y=50)
         self.LabelGU.place(x=30, y=50)
         self.LabelWP.place(x=30, y=10)
@@ -448,12 +458,6 @@ class HelpPage(Frame):
         self.LabelHP.place(x=39, y=100)
         self.w.place(x=30, y=130)
         self.buttonx.place(x=30, y=170)
-
-        self.canvas = Canvas(root, width=1000, height=1000)
-        self.canvas.pack()
-
-        self.line = self.canvas.create_line(
-            329, -10, 329, 450, fill='light steel blue')
 
     def getEntry(self):
         entry = self.var.get()
@@ -579,6 +583,8 @@ class StockPage(Frame):
         plt.show(ax)
 
         ax3 = fig.add_subplot(2, 1, 2)
+        plt.ylabel('Sentiment Value')
+        plt.xlabel('Tweet')
         ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         plt.plot(df['values'])
         plt.show()
@@ -589,7 +595,7 @@ class StockPage(Frame):
             self.LabelBB = Label(
                 self.master,
                 text=
-                ("Bollinger Bands: \nWhen the market is volatile, the bands widen.\n When the market is under a less volatile period, the bands contract. "
+                ("Bollinger Bands: \nWhen the market is volatile, the bands widen.\n When the market is under a less volatile period, the bands contract."
                  ),
                 font=("Avenir", 14))
             self.LabelBB.place(x=30, y=200)
