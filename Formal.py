@@ -15,6 +15,9 @@ import math
 import quandl
 from tkinter import *
 import pandas as pd
+from tkinter.ttk import Progressbar
+from scipy.stats import pearsonr
+import time as tm
 
 import matplotlib
 from mpl_finance import candlestick_ohlc
@@ -92,15 +95,17 @@ class Twitter(object):
 
     def Trends(self):
         global TopTopics
-        Trends = self.api.trends_place(1)
+        Trends = self.api.trends_place(
+            1)  # Uses the API to get most retweeted tweets in the world(1)
         Trend_Data = Trends[0]
-        Trend_Data = Trend_Data['trends']
+        Trend_Data = Trend_Data['trends']  #Creates a data frame for Trend data
         topicname = [Trend_Data['name'] for Trend_Data in Trend_Data]
         TopTopics = list()
         for i in topicname[0:5]:
-            TopTopics.append(i)
+            TopTopics.append(i)  #Appends the top 5 retweeted tweets.
 
-        TopTopics = '\n'.join(TopTopics)
+        TopTopics = '\n'.join(
+            TopTopics)  #creates a line between every Top Topic
         #TopTopics will be displayed in the tkinter page
         print(TopTopics)
 
@@ -154,9 +159,7 @@ class Twitter(object):
         posWordCounter = 0
         negWordCounter = 0
 
-        PosFile = open(
-            "PositiveWords.txt"
-        )  # PositiveWord List extracted from : http://ptrckprry.com/course/ssd/data/positive-words.txt
+        PosFile = open("PositiveWords.txt")
         NegFile = open("NegativeWords.txt")
 
         wordlist = []
@@ -202,17 +205,6 @@ class Twitter(object):
             print("Neutral")
 
         return positiveTweets, negativeTweets, OverallTotal
-
-    def FindCorrelation(self):
-
-        closeValues = Data['Close'].get_values()
-        x = closeValues
-        y = OverallTotal
-        N = 50
-        n = 50
-        t = ((statistics.mean(x) - statistics.mean(y)) / (math.sqrt((
-            (statistics.stdev(x) ^ 2) / N)) + ((statistics.stdev(y) ^ 2) / n)))
-        #Student T-test - x - Sample 1, y-Sample 2 , N is sample 1, n is sample 2
 
     def Main(self):
 
@@ -298,8 +290,6 @@ class Stock(object):
 
             return Data
 
-            #self.Twitter.FindCorrelation()
-
         except:
             pass
 
@@ -328,22 +318,23 @@ class Window(Frame):
         )  #Seprates the Main window - Left=Stock Right=Twitter Query
 
         self.rectangle = self.canvas.create_rectangle(
-            0,0,660,45,fill='IndianRed1')
+            0, 0, 660, 45, fill='IndianRed1')
         self.rectangle_bottomn = self.canvas.create_rectangle(
-            0,405,660,440,fill='light blue')
-
-        self.LabelT = Label(
-            self.master, text="Select Company:", font=("Avenir", 14))
-        self.var = StringVar(self.master)
+            0, 405, 660, 440, fill='light blue')
 
         self.LabelTQ = Label(
             self.master, text='Twitter Query:', font=("Avenir", 14))
         self.EntryTQ = Entry(self.master, borderwidth=2)
+
         self.ButtonTQ = Button(
             self.master,
             text="Enter",
             font=("Avenir", 14),
             command=self.TwitterQueryEntry)
+
+        self.LabelT = Label(
+            self.master, text="Select Company:", font=("Avenir", 14))
+        self.var = StringVar(self.master)
 
         self.Choice = ["AAPL", "AMZN", "MSFT", "NKE"]
         self.var.set(self.Choice[0])
@@ -387,6 +378,7 @@ class Window(Frame):
             font=("Avenir", 14),
             relief='groove')
 
+
         self.LabelTt.place(x=40, y=300)
         self.LabelTT.place(x=40, y=270)
         self.LabelSH.place(x=360, y=50)
@@ -395,15 +387,30 @@ class Window(Frame):
 
         self.ButtonHP = Button(
             self.master, text="Help", command=self.GoToHelpPage)
-        self.ButtonVG = Button(
-            self.master, text="View Graph", command=self.GoToStockPage)
-        self.ButtonVG.place(x=350, y=350)
+
         self.ButtonHP.place(x=600, y=10)
 
     def CompanyEntry(self):
         """Retrives Entry of USER"""
         global stockentry
         try:
+            self.progressbar= Progressbar(self.master,length=100)
+            self.progressbar['value'] = 20
+            self.progressbar.place(x=350, y=300)
+            self.progressbar['value'] = 40
+            self.progressbar.place(x=350, y=300)
+            self.progressbar['value'] = 60
+            self.progressbar.place(x=350, y=300)
+            self.progressbar['value'] = 80
+            self.progressbar.place(x=350, y=300)
+            self.progressbar['value'] = 100
+            self.progressbar.place(x=350, y=300)
+
+
+            self.ButtonVG = Button(
+                self.master, text="View Graph", command=self.GoToStockPage)
+            self.ButtonVG.place(x=350, y=350)
+
             self.LabelCP = Label(
                 self.master, text="Loading", font=("Avenir", 12))
             self.LabelCP.place(x=350, y=400)
@@ -453,7 +460,7 @@ class HelpPage(Frame):
         self.var.set(self.Choice[0])
         self.w = OptionMenu(self.master, self.var,
                             *self.Choice)  # Drop Down Menu
-        self.buttonx = Button(self.master, text="Enter", command=self.getEntry)
+        self.buttonx = Button(self.master, text="Enter",takefocus=True,command=self.getEntry)
 
         self.LabelHP.place(x=39, y=100)
         self.w.place(x=30, y=130)
@@ -483,7 +490,8 @@ class HelpPage(Frame):
             self.master,
             text=
             "Enter your Query and Hit Enter Button \n This query will used to pull Twitter Data from the Database",
-            font=("Avenir", 12))
+            font=("Avenir", 12),
+            takefoucs=True)
         self.LabelHT.place(x=300, y=100)
 
     def About(self):
@@ -531,19 +539,23 @@ class StockPage(Frame):
         self.buttonx = Button(
             self.master, text="Enter", command=self.GetEntryIndicator)
 
+        self.buttonfc = Button(self.master,text="Find Correlation",command=self.FindCorrelation)
+        self.buttonfc.place(x=20,y=50)
+
         self.LabelWI.place(x=20, y=100)
         self.om.place(x=20, y=130)
         self.buttonx.place(x=20, y=170)
 
-        self.LabelGO.place(x=20, y=50)
+        self.LabelGO.place(x=20, y=20)
 
         plt.style.use('ggplot')
-        # Creates A 3-Day Moving Average
-        Data['MA50'] = Data['Close'].rolling(3).mean()
         MovingAverage = Data['Close'].rolling(3).mean()
 
+        # Creates A 3-Day Moving Average
+        Data['MA50'] = Data['Close'].rolling(2).mean()
+
         # Calculates Standard Deviation on rolling mean
-        StandardDeviation = Data['Close'].rolling(3).std()
+        StandardDeviation = Data['Close'].rolling(2).std()
 
         # Bollinger Bands Indicator - Upper Boundary
         Data['UpBB'] = MovingAverage + (2 * StandardDeviation)
@@ -554,40 +566,46 @@ class StockPage(Frame):
         fig = plt.figure(figsize=(9, 9))
         fig.suptitle(stockentry + ' STOCK DATA', fontsize=12)
 
-        ax = fig.add_subplot(2, 1, 1)
+        ax = plt.subplot2grid((2,2),(0,0),colspan=4,rowspan=1)
         Data['Date'] = Data.index.map(mdates.date2num)
-        plt.plot(Data['Close'], Label="Close", color="green")
+        plt.plot(Data['Close'], Label="Close", color="yellow")
+
         plt.pause(0.05)
         plt.plot(Data['MA50'], label="Moving Average", color="blue")
         plt.pause(0.05)
-        plt.plot(Data['UpBB'], Label="Upper Bollinger Band", color="red")
+        plt.plot(Data['UpBB'], Label="Upper Bollinger Band", color="black")
         plt.pause(0.05)
         plt.plot(Data['LowBB'], Label="Lower Bollinger Band", color="grey")
         plt.pause(0.05)
         plt.xlabel("Date")
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         plt.legend(loc='best')
+        ax.set_ylabel('Value')
 
-        ax2 = fig.add_subplot(2, 1, 2)
         Data['Date'] = Data.index.map(mdates.date2num)
         candlestickData = Data[['Date', 'Open', 'High', 'Low', 'Close']]
         candlestick_ohlc(
-            ax2,
+            ax,
             candlestickData.values,
-            width=.7,
+            width=.3,
             colorup='green',
             colordown='red')
         plt.xlabel("Date")
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-        ax.get_shared_x_axes().join(ax, ax2)
+        #ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+        # ax.get_shared_x_axes().join(ax, ax2)
+
+        ax4 = fig.add_subplot(2,2,3)
+        Data['Date'] = Data.index.map(mdates.date2num)
+        ax4.scatter(Data['Close'],Data['High'])
+        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+        ax4.set_xlabel('Date')
+        ax4.set_ylabel('Value')
+        #ax3 = ax4.twiny()
+        #ax3.set_ylabel('Tweet', color='green')
+        #ax3.plot(df['values'], color='black')
+
         plt.show(ax)
 
-        ax3 = fig.add_subplot(2, 1, 2)
-        plt.ylabel('Sentiment Value')
-        plt.xlabel('Tweet')
-        ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-        plt.plot(df['values'])
-        plt.show()
 
     def GetEntryIndicator(self):
         choice_entry = self.varc.get()
@@ -605,6 +623,8 @@ class StockPage(Frame):
                 self.master,
                 text=("Moving Average is calculated by..."),
                 font=("Avenir", 14))
+
+
             self.LabelMA.place(x=30, y=280)
 
         else:
@@ -613,6 +633,13 @@ class StockPage(Frame):
                 text=("Candlestick Graph is generated by..."),
                 font=("Avenir", 14))
             self.LabelCS.place(x=30, y=320)
+
+    def FindCorrelation(self):
+        close_values_mean = Data['Close'].mean()
+
+        sentiment_values = OverallTotalToPlot
+        print(close_values_mean,sentiment_values)
+
 
 
 root = Tk()
