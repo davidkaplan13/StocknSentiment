@@ -18,6 +18,7 @@ import pandas as pd
 from tkinter.ttk import Progressbar
 from scipy.stats import pearsonr
 import time as tm
+import numpy as np
 
 import matplotlib
 from mpl_finance import candlestick_ohlc
@@ -64,7 +65,8 @@ positiveEmojiList = [
     ':fire:',
     ':money_bag:',
     ':dollar_banknote:',
-    ':glowing_star:'
+    ':glowing_star:',
+    ':rolling_on_the_floor_laughing:'
 ]
 
 negativeEmojiList = [
@@ -212,7 +214,7 @@ class Twitter(object):
         endDate = datetime.datetime(2018, 9, 17, 0, 0, 0)
 
         search = Cursor(
-            self.api.search, q=('#' + str(query)), lang='en', count=2)
+            self.api.search, q=('#' + str(query)), lang='en', count=10)
 
         #search = got3.manager.TweetCriteria().setQuerySearch('westbrook').setSince("2018-01-01").setUntil("2018-01-31")
         #AllTweets = got3.manager.TweetManager.getTweets(search)
@@ -515,12 +517,11 @@ class StockPage(Frame):
             s.append(r.read())
 
         print(OverallTotalToPlot)
-        today = datetime.datetime.now()
-        past_week = today - datetime.timedelta(days=7)
-        days = pd.date_range(past_week, today, periods=len(OverallTotalToPlot))
-        df = pd.DataFrame({'date': days, 'values': OverallTotalToPlot})
-        df.set_index(['date'])
-        print(df)
+        #today = datetime.datetime.now()
+        #past_week = today - datetime.timedelta(days=7)
+        #days = pd.date_range(past_week, today, periods=len(OverallTotalToPlot))
+        df = pd.DataFrame({'values': OverallTotalToPlot})
+
 
         self.LabelGO = Label(
             self.master,
@@ -596,14 +597,20 @@ class StockPage(Frame):
 
         ax4 = fig.add_subplot(2,2,3)
         Data['Date'] = Data.index.map(mdates.date2num)
-        ax4.scatter(Data['Close'],Data['High'])
-        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+        ax4.plot(Data['Close'],label='Close Price')
+        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
         ax4.set_xlabel('Date')
         ax4.set_ylabel('Value')
-        #ax3 = ax4.twiny()
-        #ax3.set_ylabel('Tweet', color='green')
-        #ax3.plot(df['values'], color='black')
+        ax4.legend(loc='best')
 
+
+        ax5 = fig.add_subplot(2,2,4)
+        ax5.scatter(df,df['values'],label='Sentiment Value',color='blue')
+        cofficient = pearsonr((df['values'][0:7]),Data['Close'])
+        print("correlaction coefficient: ",str(cofficient))
+        ax5.plot(cofficient,label='Pearson correlation coefficient',color='magenta')
+        ax5.set_xlabel('Tweet')
+        ax5.legend(loc='best')
         plt.show(ax)
 
 
@@ -635,14 +642,12 @@ class StockPage(Frame):
             self.LabelCS.place(x=30, y=320)
 
     def FindCorrelation(self):
-        close_values_mean = Data['Close'].mean()
-
-        sentiment_values = OverallTotalToPlot
-        print(close_values_mean,sentiment_values)
+        pass
 
 
 
 root = Tk()
 root.geometry("660x440")
+
 app = Window(root)
 root.mainloop()
