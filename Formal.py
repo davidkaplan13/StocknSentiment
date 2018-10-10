@@ -19,7 +19,8 @@ from tkinter.ttk import Progressbar
 from scipy.stats import pearsonr
 import time as tm
 import numpy as np
-
+from collections import Counter
+from sklearn.feature_extraction.text import CountVectorizer
 import matplotlib
 from mpl_finance import candlestick_ohlc
 matplotlib.use("TkAgg")
@@ -61,12 +62,13 @@ positiveEmojiList = [
     ':joy:',
     ':satisfied:',
     ':crown:',
-    'face_with_tears_of_joy',
+    ':face_with_tears_of_joy:',
     ':fire:',
     ':money_bag:',
     ':dollar_banknote:',
     ':glowing_star:',
-    ':rolling_on_the_floor_laughing:'
+    ':rolling_on_the_floor_laughing:',
+    ':slightly_smiling_face:'
 ]
 
 negativeEmojiList = [
@@ -84,7 +86,9 @@ negativeEmojiList = [
     ':frowning:',
     ':man_shrugging:',
     ':face_screaming_in_fear:',
-    ':crying_face:'
+    ':crying_face:',
+    ':pouting_face:',
+    ':flushed_face:'
 ]
 
 class Twitter(object):
@@ -154,37 +158,48 @@ class Twitter(object):
         return positiveCounter, negativeCounter
 
     def ClassifyWords(self, CleanTweet):
-        """Needs Fixing"""
         global posWordCounter
         global negWordCounter
 
         posWordCounter = 0
         negWordCounter = 0
 
-        PosFile = open("PositiveWords.txt")
-        NegFile = open("NegativeWords.txt")
+        PosFile = open("PositiveWords.txt").read()
+        NegFile = open("NegativeWords.txt").read()
 
-        wordlist = []
+        nomarks = CleanTweet.replace('!', '')
+        nomarks = nomarks.lower()
+        nomarks = nomarks.replace('.', '')
+        nomarks = nomarks.replace(':', '')
+
+        word_counter = dict()
+
         try:
-            for words in CleanTweet.split():
-                words.replace("#", "")  #Removes URL for analysis of words
-                wordlist.append(words.lower())
-
-            for i in range(0, len(wordlist)):
-                if wordlist[i] in PosFile.read():
-                    posWordCounter += 1
-                    i += 1
-
-                elif wordlist[i] in NegFile.read():
-                    print(wordlist[i])
-                    negWordCounter += 1
-                    i += 1
-
+            for words in nomarks.split():
+                if words in word_counter:
+                    word_counter[words] += 1
                 else:
-                    i += 1
+                    word_counter[words] = 1
+            for words in nomarks.split():
+                if words in PosFile.splitlines():
+                    if word_counter[words] > 1:
+                        posWordCounter += (word_counter[words] * 1.3)
+                        print(word_counter[words], posWordCounter)
+                        print(words)
+                    else:
+                        posWordCounter += 1
+                        print(words)
+                elif words in NegFile.splitlines():
+                    if word_counter[words] > 1:
+                        negWordCounter += (word_counter[words] * 1.3)
+                        print(word_counter[words], negWordCounter)
+                        print(words)
+                    else:
+                        negWordCounter += 1
+                        print(words)
 
         except:
-            print("No Such String")
+            print("Error")
 
         return posWordCounter, negWordCounter
 
@@ -230,6 +245,7 @@ class Twitter(object):
 
         try:
             for tweet in search.items(20):
+
                 #if tweet.created_at < endDate and tweet.created_at > startDate
 
                 counterOfTweets += 1
@@ -320,9 +336,9 @@ class Window(Frame):
         )  #Seprates the Main window - Left=Stock Right=Twitter Query
 
         self.rectangle = self.canvas.create_rectangle(
-            0, 0, 660, 45, fill='IndianRed1')
+            0, 0, 660, 45, fill='light sky blue',outline='light sky blue')
         self.rectangle_bottomn = self.canvas.create_rectangle(
-            0, 405, 660, 440, fill='light blue')
+            0, 405, 660, 440, fill='salmon', outline='salmon')
 
         self.LabelTQ = Label(
             self.master, text='Twitter Query:', font=("Avenir", 14))
@@ -380,7 +396,6 @@ class Window(Frame):
             font=("Avenir", 14),
             relief='groove')
 
-
         self.LabelTt.place(x=40, y=300)
         self.LabelTT.place(x=40, y=270)
         self.LabelSH.place(x=360, y=50)
@@ -396,7 +411,7 @@ class Window(Frame):
         """Retrives Entry of USER"""
         global stockentry
         try:
-            self.progressbar= Progressbar(self.master,length=100)
+            self.progressbar = Progressbar(self.master, length=100)
             self.progressbar['value'] = 20
             self.progressbar.place(x=350, y=300)
             self.progressbar['value'] = 40
@@ -407,7 +422,6 @@ class Window(Frame):
             self.progressbar.place(x=350, y=300)
             self.progressbar['value'] = 100
             self.progressbar.place(x=350, y=300)
-
 
             self.ButtonVG = Button(
                 self.master, text="View Graph", command=self.GoToStockPage)
@@ -442,7 +456,6 @@ class Window(Frame):
 
 
 class HelpPage(Frame):
-
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -462,7 +475,8 @@ class HelpPage(Frame):
         self.var.set(self.Choice[0])
         self.w = OptionMenu(self.master, self.var,
                             *self.Choice)  # Drop Down Menu
-        self.buttonx = Button(self.master, text="Enter",takefocus=True,command=self.getEntry)
+        self.buttonx = Button(
+            self.master, text="Enter", takefocus=True, command=self.getEntry)
 
         self.LabelHP.place(x=39, y=100)
         self.w.place(x=30, y=130)
@@ -501,7 +515,6 @@ class HelpPage(Frame):
 
 
 class StockPage(Frame):
-
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -522,7 +535,6 @@ class StockPage(Frame):
         #days = pd.date_range(past_week, today, periods=len(OverallTotalToPlot))
         df = pd.DataFrame({'values': OverallTotalToPlot})
 
-
         self.LabelGO = Label(
             self.master,
             text=("Overall Sentiment of Tweets:", str(OverallSentiment)),
@@ -540,8 +552,9 @@ class StockPage(Frame):
         self.buttonx = Button(
             self.master, text="Enter", command=self.GetEntryIndicator)
 
-        self.buttonfc = Button(self.master,text="Find Correlation",command=self.FindCorrelation)
-        self.buttonfc.place(x=20,y=50)
+        self.buttonfc = Button(
+            self.master, text="Find Correlation", command=self.FindCorrelation)
+        self.buttonfc.place(x=20, y=50)
 
         self.LabelWI.place(x=20, y=100)
         self.om.place(x=20, y=130)
@@ -567,7 +580,7 @@ class StockPage(Frame):
         fig = plt.figure(figsize=(9, 9))
         fig.suptitle(stockentry + ' STOCK DATA', fontsize=12)
 
-        ax = plt.subplot2grid((2,2),(0,0),colspan=4,rowspan=1)
+        ax = plt.subplot2grid((2, 2), (0, 0), colspan=4, rowspan=1)
         Data['Date'] = Data.index.map(mdates.date2num)
         plt.plot(Data['Close'], Label="Close", color="yellow")
 
@@ -595,24 +608,25 @@ class StockPage(Frame):
         #ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         # ax.get_shared_x_axes().join(ax, ax2)
 
-        ax4 = fig.add_subplot(2,2,3)
+        ax4 = fig.add_subplot(2, 2, 3)
         Data['Date'] = Data.index.map(mdates.date2num)
-        ax4.plot(Data['Close'],label='Close Price')
+        ax4.plot(Data['Close'], label='Close Price')
         ax4.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
         ax4.set_xlabel('Date')
         ax4.set_ylabel('Value')
         ax4.legend(loc='best')
 
-
-        ax5 = fig.add_subplot(2,2,4)
-        ax5.scatter(df,df['values'],label='Sentiment Value',color='blue')
-        cofficient = pearsonr((df['values'][0:7]),Data['Close'])
-        print("correlaction coefficient: ",str(cofficient))
-        ax5.plot(cofficient,label='Pearson correlation coefficient',color='magenta')
+        ax5 = fig.add_subplot(2, 2, 4)
+        ax5.scatter(df, df['values'], label='Sentiment Value', color='blue')
+        cofficient = pearsonr((df['values'][0:7]), Data['Close'])
+        print("correlaction coefficient: ", str(cofficient))
+        ax5.plot(
+            cofficient,
+            label='Pearson correlation coefficient',
+            color='magenta')
         ax5.set_xlabel('Tweet')
         ax5.legend(loc='best')
         plt.show(ax)
-
 
     def GetEntryIndicator(self):
         choice_entry = self.varc.get()
@@ -631,7 +645,6 @@ class StockPage(Frame):
                 text=("Moving Average is calculated by..."),
                 font=("Avenir", 14))
 
-
             self.LabelMA.place(x=30, y=280)
 
         else:
@@ -643,7 +656,6 @@ class StockPage(Frame):
 
     def FindCorrelation(self):
         pass
-
 
 
 root = Tk()
