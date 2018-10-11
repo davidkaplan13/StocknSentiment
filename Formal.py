@@ -91,6 +91,38 @@ negativeEmojiList = [
     ':flushed_face:'
 ]
 
+negation = [
+    'no',
+    'not',
+    "couldn't",
+    "wasn't",
+    "didn’t",
+    "wouldn’t",
+    "shouldn’t",
+    "weren’t",
+    "don’t",
+    "doesn't",
+    "haven't",
+    "hasn't",
+    "won't",
+    "wont",
+    "hadn't",
+    "never",
+    "none",
+    "nobody",
+    "nothing",
+    "neither",
+    "nor",
+    "nowhere",
+    "isn't",
+    "can't",
+    "cannot",
+    "mustn't",
+    "mightn't",
+    "shan't",
+    "without",
+    "needn't"
+]
 class Twitter(object):
 
     def __init__(self):
@@ -213,10 +245,26 @@ class Twitter(object):
         OverallTotal = (TotalPos - TotalNeg) / (len(CleanTweet.split()))
         OverallTotalToPlot.append(OverallTotal)
 
+        global negative_tweets
+        global positive_tweets
+        negative_tweets = dict()
+        positive_tweets = dict()
+
         if OverallTotal > 0:
             print("Positive Tweet", OverallTotal)
+            try:
+               positive_tweets[CleanTweet] = OverallTotal
+               print(positive_tweets)
+            except:
+                print("error")
         elif OverallTotal < 0:
             print("Negative Tweet", OverallTotal)
+            try:
+               negative_tweets[CleanTweet] = OverallTotal
+               print(negative_tweets)
+
+            except:
+                print("error")
 
         else:
             print("Neutral")
@@ -225,14 +273,9 @@ class Twitter(object):
 
     def Main(self):
 
-        startDate = datetime.datetime(2018, 9, 10, 0, 0, 0)
-        endDate = datetime.datetime(2018, 9, 17, 0, 0, 0)
-
         search = Cursor(
             self.api.search, q=('#' + str(query)), lang='en', count=10)
 
-        #search = got3.manager.TweetCriteria().setQuerySearch('westbrook').setSince("2018-01-01").setUntil("2018-01-31")
-        #AllTweets = got3.manager.TweetManager.getTweets(search)
 
         global counterOfTweets
         counterOfTweets = 0
@@ -240,8 +283,6 @@ class Twitter(object):
         TotalNegTweets = 0
         TotalNeuTweets = 0
 
-        posTweets = list()
-        negTweets = list()
 
         try:
             for tweet in search.items(20):
@@ -260,10 +301,10 @@ class Twitter(object):
                       countNumbers)
                 if OverallTotal > 0:
                     TotalPosTweets += 1
-                    posTweets.append(tweet.text)
+
                 elif OverallTotal < 0:
                     TotalNegTweets += 1
-                    negTweets.append(tweet.text)
+
                 else:
                     TotalNeuTweets += 1
 
@@ -411,25 +452,13 @@ class Window(Frame):
         """Retrives Entry of USER"""
         global stockentry
         try:
-            self.progressbar = Progressbar(self.master, length=100)
-            self.progressbar['value'] = 20
-            self.progressbar.place(x=350, y=300)
-            self.progressbar['value'] = 40
-            self.progressbar.place(x=350, y=300)
-            self.progressbar['value'] = 60
-            self.progressbar.place(x=350, y=300)
-            self.progressbar['value'] = 80
-            self.progressbar.place(x=350, y=300)
-            self.progressbar['value'] = 100
-            self.progressbar.place(x=350, y=300)
-
             self.ButtonVG = Button(
                 self.master, text="View Graph", command=self.GoToStockPage)
             self.ButtonVG.place(x=350, y=350)
 
             self.LabelCP = Label(
                 self.master, text="Loading", font=("Avenir", 12))
-            self.LabelCP.place(x=350, y=400)
+            self.LabelCP.place(x=350, y=320)
             stockentry = self.var.get()
             self.Stock.StockData()
 
@@ -515,6 +544,7 @@ class HelpPage(Frame):
 
 
 class StockPage(Frame):
+
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -530,9 +560,6 @@ class StockPage(Frame):
             s.append(r.read())
 
         print(OverallTotalToPlot)
-        #today = datetime.datetime.now()
-        #past_week = today - datetime.timedelta(days=7)
-        #days = pd.date_range(past_week, today, periods=len(OverallTotalToPlot))
         df = pd.DataFrame({'values': OverallTotalToPlot})
 
         self.LabelGO = Label(
@@ -561,6 +588,13 @@ class StockPage(Frame):
         self.buttonx.place(x=20, y=170)
 
         self.LabelGO.place(x=20, y=20)
+
+        self.canvascircle = Canvas(self.master,width=670,height=480)
+        self.canvascircle.grid(row=0, column=0, sticky='nsew')
+
+        print("YES",positive_tweets)
+        print("No,",negative_tweets)
+
 
         plt.style.use('ggplot')
         MovingAverage = Data['Close'].rolling(3).mean()
