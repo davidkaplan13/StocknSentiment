@@ -47,6 +47,7 @@ OverallTotalToPlot = []
 
 #===== Arrays(For Classification of Emojis) =====#
 
+
 positiveEmojiList = [
     ':smile:',
     ':simple_smile:',
@@ -123,6 +124,7 @@ negation = [
     "without",
     "needn't"
 ]
+
 class Twitter(object):
 
     def __init__(self):
@@ -253,15 +255,15 @@ class Twitter(object):
         if OverallTotal > 0:
             print("Positive Tweet", OverallTotal)
             try:
-               positive_tweets[CleanTweet] = OverallTotal
-               print(positive_tweets)
+                positive_tweets[CleanTweet] = OverallTotal
+                print(positive_tweets)
             except:
                 print("error")
         elif OverallTotal < 0:
             print("Negative Tweet", OverallTotal)
             try:
-               negative_tweets[CleanTweet] = OverallTotal
-               print(negative_tweets)
+                negative_tweets[CleanTweet] = OverallTotal
+                print(negative_tweets)
 
             except:
                 print("error")
@@ -276,13 +278,11 @@ class Twitter(object):
         search = Cursor(
             self.api.search, q=('#' + str(query)), lang='en', count=10)
 
-
         global counterOfTweets
         counterOfTweets = 0
         TotalPosTweets = 0
         TotalNegTweets = 0
         TotalNeuTweets = 0
-
 
         try:
             for tweet in search.items(20):
@@ -377,7 +377,7 @@ class Window(Frame):
         )  #Seprates the Main window - Left=Stock Right=Twitter Query
 
         self.rectangle = self.canvas.create_rectangle(
-            0, 0, 660, 45, fill='light sky blue',outline='light sky blue')
+            0, 0, 660, 45, fill='light sky blue', outline='light sky blue')
         self.rectangle_bottomn = self.canvas.create_rectangle(
             0, 405, 660, 440, fill='salmon', outline='salmon')
 
@@ -415,9 +415,11 @@ class Window(Frame):
 
         self.LabelWP = Label(
             self.master,
-            text="Welcome To Stock/Sentiment",
-            font=("Avenir", 16),
-            foreground='blue')
+            text="Stock and Sentiment Program",
+            font=("Avenir", 20),
+            foreground='white',
+            activebackground='light sky blue',
+            background='light sky blue')
         self.LabelGU = Label(
             self.master,
             text="Please Enter the Twitter Query First",
@@ -430,21 +432,27 @@ class Window(Frame):
             self.master,
             text="Hot Topics In Twitter",
             font=("Avenir", 14),
-            foreground='red')
+            foreground='salmon')
         self.LabelTt = Label(
             self.master,
             text=(TopTopics),
+            foreground='black',
             font=("Avenir", 14),
             relief='groove')
 
         self.LabelTt.place(x=40, y=300)
-        self.LabelTT.place(x=40, y=270)
+        self.LabelTT.place(x=48, y=270)
         self.LabelSH.place(x=360, y=50)
         self.LabelGU.place(x=30, y=50)
-        self.LabelWP.place(x=30, y=10)
+        self.LabelWP.place(x=195, y=10)
 
         self.ButtonHP = Button(
-            self.master, text="Help", command=self.GoToHelpPage)
+            self.master,
+            text="Help",
+            font=("Avenir", 14),
+            background='light sky blue',
+            activebackground='light sky blue',
+            command=self.GoToHelpPage)
 
         self.ButtonHP.place(x=600, y=10)
 
@@ -457,7 +465,10 @@ class Window(Frame):
             self.ButtonVG.place(x=350, y=350)
 
             self.LabelCP = Label(
-                self.master, text="Loading", font=("Avenir", 12))
+                self.master,
+                text="Loading...",
+                font=("Avenir", 12),
+                foreground='salmon')
             self.LabelCP.place(x=350, y=320)
             stockentry = self.var.get()
             self.Stock.StockData()
@@ -485,27 +496,46 @@ class Window(Frame):
 
 
 class HelpPage(Frame):
+
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.master = master
+        self.masters = master
         self.master.geometry("660x440")
         self.create_Help_Page()
 
     def create_Help_Page(self):
-        self.master.title("Help Page")
-        self.master.configure(
-            background='snow', highlightbackground='light steel blue')
+        self.masters.title("Help Page")
+        self.masters.configure(
+            background='white', highlightbackground='light steel blue')
 
-        self.LabelHP = Label(self.master, text="Select an Option:")
-        self.var = StringVar(self.master)
+        self.canvashp = Canvas(self.masters,width=670,height=480)
+        self.canvashp.grid(row=0, column=0, sticky='nsew')
+
+        self.rectangle_top = self.canvashp.create_rectangle(
+            0, 0, 660, 45, fill='light sky blue', outline='light sky blue')
+        self.rectangle_bottom = self.canvashp.create_rectangle(
+            0, 405, 660, 440, fill='salmon', outline='salmon')
+
+        self.LabelHp = Label(
+            self.master,
+            text="Help Page",
+            font=("Avenir", 20),
+            foreground='white',
+            activebackground='light sky blue',
+            background='light sky blue')
+
+        self.LabelHp.place(x=280,y=10)
+
+        self.LabelHP = Label(self.masters, text="Select an Option:")
+        self.var = StringVar(self.masters)
         self.Choice = [
             "Help With Stock Graph", "Help with Twitter Query", "About"
         ]
         self.var.set(self.Choice[0])
-        self.w = OptionMenu(self.master, self.var,
+        self.w = OptionMenu(self.masters, self.var,
                             *self.Choice)  # Drop Down Menu
         self.buttonx = Button(
-            self.master, text="Enter", takefocus=True, command=self.getEntry)
+            self.masters, text="Enter",command=self.getEntry)
 
         self.LabelHP.place(x=39, y=100)
         self.w.place(x=30, y=130)
@@ -523,20 +553,24 @@ class HelpPage(Frame):
 
     def HelpStock(self):
         self.LabelHS = Label(
-            self.master,
+            self.masters,
             text=
             "Ticker Information \n AAPL = APPLE \n AMZN = AMAZON \n MSFT = MICROSOFT \n NKE = NIKE",
-            font=("Avenir", 12))
+            font=("Avenir", 12),
+            foreground='light sky blue',
+            relief='groove'
+        )
+
         self.LabelHS.place(x=300, y=150)
 
     def HelpTwitter(self):
 
         self.LabelHT = Label(
-            self.master,
+            self.masters,
             text=
             "Enter your Query and Hit Enter Button \n This query will used to pull Twitter Data from the Database",
-            font=("Avenir", 12),
-            takefoucs=True)
+            font=("Avenir", 12)
+        )
         self.LabelHT.place(x=300, y=100)
 
     def About(self):
@@ -547,14 +581,14 @@ class StockPage(Frame):
 
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.master = master
+        self.mastersp = master
         self.master.geometry("660x440")
         self.Twitter = Twitter()
         self.GraphStock()
 
     def GraphStock(self):
 
-        self.master.title("Tweet and Graph Page")
+        self.mastersp.title("Tweet and Graph Page")
         s = []
         with open("Parsed_Tweets.txt", 'r') as r:
             s.append(r.read())
@@ -562,39 +596,51 @@ class StockPage(Frame):
         print(OverallTotalToPlot)
         df = pd.DataFrame({'values': OverallTotalToPlot})
 
+        self.canvashp = Canvas(self.mastersp, width=670, height=480)
+        self.canvashp.grid(row=0, column=0, sticky='nsew')
+
+        self.rectangle_top = self.canvashp.create_rectangle(
+            0, 0, 660, 45, fill='light sky blue', outline='light sky blue')
+        self.rectangle_bottom = self.canvashp.create_rectangle(
+            0, 405, 660, 440, fill='salmon', outline='salmon')
+
+        self.Labelsp = Label(
+            self.mastersp,
+            text="Twiter Sentiment Page",
+            font=("Avenir", 20),
+            foreground='white',
+            activebackground='light sky blue',
+            background='light sky blue')
+
+        self.Labelsp.place(x=240,y=10)
+
         self.LabelGO = Label(
-            self.master,
-            text=("Overall Sentiment of Tweets:", str(OverallSentiment)),
-            font=("Avenir", 14))
+            self.mastersp,
+            text=("Overall Sentiment of Tweets:", OverallSentiment),
+            font=("Avenir", 14),
+            relief='groove'
+        )
 
         self.LabelWI = Label(
-            self.master,
+            self.mastersp,
             text=("Information About Indicators/Graph:"),
             font=("Avenir", 14))
         self.varc = StringVar(self.master)
         self.Choices = ["Bollinger Bands", "Moving Average", "Candlestick"]
         self.varc.set(self.Choices[0])
-        self.om = OptionMenu(self.master, self.varc,
+        self.om = OptionMenu(self.mastersp, self.varc,
                              *self.Choices)  # Drop Down Menu
         self.buttonx = Button(
-            self.master, text="Enter", command=self.GetEntryIndicator)
+            self.mastersp, text="Enter", command=self.GetEntryIndicator)
 
-        self.buttonfc = Button(
-            self.master, text="Find Correlation", command=self.FindCorrelation)
-        self.buttonfc.place(x=20, y=50)
+        self.LabelWI.place(x=20, y=130)
+        self.om.place(x=20, y=160)
+        self.buttonx.place(x=20, y=190)
 
-        self.LabelWI.place(x=20, y=100)
-        self.om.place(x=20, y=130)
-        self.buttonx.place(x=20, y=170)
+        self.LabelGO.place(x=20, y=100)
 
-        self.LabelGO.place(x=20, y=20)
-
-        self.canvascircle = Canvas(self.master,width=670,height=480)
-        self.canvascircle.grid(row=0, column=0, sticky='nsew')
-
-        print("YES",positive_tweets)
-        print("No,",negative_tweets)
-
+        print("YES", positive_tweets)
+        print("No,", negative_tweets)
 
         plt.style.use('ggplot')
         MovingAverage = Data['Close'].rolling(3).mean()
@@ -666,7 +712,7 @@ class StockPage(Frame):
         choice_entry = self.varc.get()
         if choice_entry == 'Bollinger Bands':
             self.LabelBB = Label(
-                self.master,
+                self.mastersp,
                 text=
                 ("Bollinger Bands: \nWhen the market is volatile, the bands widen.\n When the market is under a less volatile period, the bands contract."
                  ),
@@ -675,15 +721,16 @@ class StockPage(Frame):
 
         elif choice_entry == 'Moving Average':
             self.LabelMA = Label(
-                self.master,
+                self.mastersp,
                 text=("Moving Average is calculated by..."),
-                font=("Avenir", 14))
+                font=("Avenir", 14)
+            )
 
             self.LabelMA.place(x=30, y=280)
 
         else:
             self.LabelCS = Label(
-                self.master,
+                self.mastersp,
                 text=("Candlestick Graph is generated by..."),
                 font=("Avenir", 14))
             self.LabelCS.place(x=30, y=320)
