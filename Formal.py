@@ -342,7 +342,6 @@ class Stock(object):
         try:
             print(stockentry)
             global Data
-            #data = quandl.get('WIKI/' + str(stockentry), rows=50)
             data = quandl.get('EOD/' + str(stockentry), rows=7)
             print(data)
             Data = data
