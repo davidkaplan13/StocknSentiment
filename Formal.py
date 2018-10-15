@@ -10,24 +10,17 @@ Negative words.txt
 from tweepy import *
 import re
 import emoji
-import statistics
-import math
 import quandl
 from tkinter import *
 import pandas as pd
-from tkinter.ttk import Progressbar
 from scipy.stats import pearsonr
-import time as tm
-import numpy as np
-from collections import Counter
-from sklearn.feature_extraction.text import CountVectorizer
 import matplotlib
 from mpl_finance import candlestick_ohlc
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import *
-import datetime
+import json
 
 #======== API Keys (Tweepy and Quandl) =========#
 
@@ -46,7 +39,6 @@ global OverallTotalToPlot
 OverallTotalToPlot = []
 
 #===== Arrays(For Classification of Emojis) =====#
-
 
 positiveEmojiList = [
     ':smile:',
@@ -90,39 +82,6 @@ negativeEmojiList = [
     ':crying_face:',
     ':pouting_face:',
     ':flushed_face:'
-]
-
-negation = [
-    'no',
-    'not',
-    "couldn't",
-    "wasn't",
-    "didn’t",
-    "wouldn’t",
-    "shouldn’t",
-    "weren’t",
-    "don’t",
-    "doesn't",
-    "haven't",
-    "hasn't",
-    "won't",
-    "wont",
-    "hadn't",
-    "never",
-    "none",
-    "nobody",
-    "nothing",
-    "neither",
-    "nor",
-    "nowhere",
-    "isn't",
-    "can't",
-    "cannot",
-    "mustn't",
-    "mightn't",
-    "shan't",
-    "without",
-    "needn't"
 ]
 
 class Twitter(object):
@@ -287,8 +246,6 @@ class Twitter(object):
         try:
             for tweet in search.items(20):
 
-                #if tweet.created_at < endDate and tweet.created_at > startDate
-
                 counterOfTweets += 1
                 CleanTweet = self.Remove_URL(tweet)
                 CleanTweetNoEmoji = self.IdentifyEmoji(CleanTweet)
@@ -342,6 +299,7 @@ class Stock(object):
         try:
             print(stockentry)
             global Data
+            #data = quandl.get('WIKI/' + str(stockentry), rows=50)
             data = quandl.get('EOD/' + str(stockentry), rows=7)
             print(data)
             Data = data
@@ -394,7 +352,7 @@ class Window(Frame):
             self.master, text="Select Company:", font=("Avenir", 14))
         self.var = StringVar(self.master)
 
-        self.Choice = ["AAPL", "AMZN", "MSFT", "NKE"]
+        self.Choice = ["AAPL", "MCD", "MSFT", "NKE", "INTC", "BA", "DIS"]
         self.var.set(self.Choice[0])
         self.w = OptionMenu(self.master, self.var,
                             *self.Choice)  # Drop Down Menu
@@ -507,7 +465,7 @@ class HelpPage(Frame):
         self.masters.configure(
             background='white', highlightbackground='light steel blue')
 
-        self.canvashp = Canvas(self.masters,width=670,height=480)
+        self.canvashp = Canvas(self.masters, width=670, height=480)
         self.canvashp.grid(row=0, column=0, sticky='nsew')
 
         self.rectangle_top = self.canvashp.create_rectangle(
@@ -523,7 +481,7 @@ class HelpPage(Frame):
             activebackground='light sky blue',
             background='light sky blue')
 
-        self.LabelHp.place(x=280,y=10)
+        self.LabelHp.place(x=280, y=10)
 
         self.LabelHP = Label(self.masters, text="Select an Option:")
         self.var = StringVar(self.masters)
@@ -534,7 +492,7 @@ class HelpPage(Frame):
         self.w = OptionMenu(self.masters, self.var,
                             *self.Choice)  # Drop Down Menu
         self.buttonx = Button(
-            self.masters, text="Enter",command=self.getEntry)
+            self.masters, text="Enter", command=self.getEntry)
 
         self.LabelHP.place(x=39, y=100)
         self.w.place(x=30, y=130)
@@ -551,16 +509,28 @@ class HelpPage(Frame):
             self.About()
 
     def HelpStock(self):
+
+        choice = ["AAPL", "MCD", "MSFT", "NKE", "INTC", "BA", "DIS"]
+        Ticker_Names = [
+            "Apple", "McDonalds", "Microsoft", "Nike", "Intel Coporation",
+            "Boeing Company", "The Walt Disney Company"
+        ]
+
+        Ticker_Name = dict()
+        i = 0
+        for i in range(0, len(choice)):
+            Ticker_Name[choice[i]] = Ticker_Names[i]
+            i += 1
+
+        PrettyTicker_Name = json.dumps(Ticker_Name, indent=2)
         self.LabelHS = Label(
             self.masters,
-            text=
-            "Ticker Information \n AAPL = APPLE \n AMZN = AMAZON \n MSFT = MICROSOFT \n NKE = NIKE",
+            text=PrettyTicker_Name,
             font=("Avenir", 12),
-            foreground='light sky blue',
-            relief='groove'
-        )
+            foreground='black',
+            relief='groove')
 
-        self.LabelHS.place(x=300, y=150)
+        self.LabelHS.place(x=300, y=250)
 
     def HelpTwitter(self):
 
@@ -568,8 +538,7 @@ class HelpPage(Frame):
             self.masters,
             text=
             "Enter your Query and Hit Enter Button \n This query will used to pull Twitter Data from the Database",
-            font=("Avenir", 12)
-        )
+            font=("Avenir", 12))
         self.LabelHT.place(x=300, y=100)
 
     def About(self):
@@ -589,9 +558,6 @@ class StockPage(Frame):
 
         self.mastersp.title("Tweet and Graph Page")
         s = []
-        with open("Parsed_Tweets.txt", 'r') as r:
-            s.append(r.read())
-
         print(OverallTotalToPlot)
         df = pd.DataFrame({'values': OverallTotalToPlot})
 
@@ -611,14 +577,13 @@ class StockPage(Frame):
             activebackground='light sky blue',
             background='light sky blue')
 
-        self.Labelsp.place(x=240,y=10)
+        self.Labelsp.place(x=240, y=10)
 
         self.LabelGO = Label(
             self.mastersp,
             text=("Overall Sentiment of Tweets:", OverallSentiment),
             font=("Avenir", 14),
-            relief='groove'
-        )
+            relief='groove')
 
         self.LabelWI = Label(
             self.mastersp,
@@ -722,9 +687,7 @@ class StockPage(Frame):
             self.LabelMA = Label(
                 self.mastersp,
                 text=("Moving Average is calculated by..."),
-                font=("Avenir", 14)
-            )
-
+                font=("Avenir", 14))
             self.LabelMA.place(x=30, y=280)
 
         else:
