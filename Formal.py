@@ -38,6 +38,11 @@ global query
 global OverallTotalToPlot
 OverallTotalToPlot = []
 
+global negative_tweets
+global positive_tweets
+negative_tweets = dict()
+positive_tweets = dict()
+
 #===== Arrays(For Classification of Emojis) =====#
 
 positiveEmojiList = [
@@ -205,11 +210,6 @@ class Twitter(object):
         TotalNeg = negWordCounter + negativeCounter
         OverallTotal = (TotalPos - TotalNeg) / (len(CleanTweet.split()))
         OverallTotalToPlot.append(OverallTotal)
-
-        global negative_tweets
-        global positive_tweets
-        negative_tweets = dict()
-        positive_tweets = dict()
 
         if OverallTotal > 0:
             print("Positive Tweet", OverallTotal)
@@ -568,6 +568,41 @@ class StockPage(Frame):
             0, 0, 660, 45, fill='light sky blue', outline='light sky blue')
         self.rectangle_bottom = self.canvashp.create_rectangle(
             0, 405, 660, 440, fill='salmon', outline='salmon')
+
+        x = 40
+        y = 50
+
+        for k in positive_tweets.keys():
+            for i in positive_tweets.values():
+                if i > 0.0 and i < 0.05:
+                    print("Small",i)
+                    self.SmallCircle = self.canvashp.create_oval(x,y,100,300,fill='green')
+                    self.canvashp.update()
+                if i > 0.05 and i < 0.2:
+                    print("Medimum",i)
+                    print(k)
+                if i > 0.2 and i < 0.4:
+                    print("Large",i)
+                    print(k)
+                if i > 0.4:
+                    print("Very large")
+                    print(k)
+
+        for nk in negative_tweets.keys():
+            for ni in negative_tweets.values():
+                if ni < 0.0 and ni > -0.05:
+                    print("Small", ni)
+                    print(nk)
+                if ni < -0.05 and ni > -0.2:
+                    print("Medimum", ni)
+                    print(nk)
+                if ni < -0.2 and ni > -0.4:
+                    print("Large", ni)
+                    print(nk)
+                if ni < -0.4:
+                    print("Very large",ni)
+                    print(nk)
+
 
         self.Labelsp = Label(
             self.mastersp,
