@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import *
 import json
+import random
 
 #======== API Keys (Tweepy and Quandl) =========#
 
@@ -569,41 +570,6 @@ class StockPage(Frame):
         self.rectangle_bottom = self.canvashp.create_rectangle(
             0, 405, 660, 440, fill='salmon', outline='salmon')
 
-        x = 40
-        y = 50
-
-        for k in positive_tweets.keys():
-            for i in positive_tweets.values():
-                if i > 0.0 and i < 0.05:
-                    print("Small",i)
-                    self.SmallCircle = self.canvashp.create_oval(x,y,100,300,fill='green')
-                    self.canvashp.update()
-                if i > 0.05 and i < 0.2:
-                    print("Medimum",i)
-                    print(k)
-                if i > 0.2 and i < 0.4:
-                    print("Large",i)
-                    print(k)
-                if i > 0.4:
-                    print("Very large")
-                    print(k)
-
-        for nk in negative_tweets.keys():
-            for ni in negative_tweets.values():
-                if ni < 0.0 and ni > -0.05:
-                    print("Small", ni)
-                    print(nk)
-                if ni < -0.05 and ni > -0.2:
-                    print("Medimum", ni)
-                    print(nk)
-                if ni < -0.2 and ni > -0.4:
-                    print("Large", ni)
-                    print(nk)
-                if ni < -0.4:
-                    print("Very large",ni)
-                    print(nk)
-
-
         self.Labelsp = Label(
             self.mastersp,
             text="Twiter Sentiment Page",
@@ -640,6 +606,73 @@ class StockPage(Frame):
 
         print("YES", positive_tweets)
         print("No,", negative_tweets)
+
+        self.canvashp.create_rectangle(300,50,600,350,outline='black',fill='white')
+        self.canvashp.update()
+
+        def SmallCircle(event):
+            print("Circle Clicked")
+
+        for k,i in positive_tweets.items():
+            if i > 0.0 and i <= 0.05:
+                x = random.randint(300,350)
+                y = random.randint(100,150)
+
+                def SmallCircle(event):
+                    print(k)
+
+                self.s = self.canvashp.create_oval(x,y,x+15,y+15,fill='green')
+                self.canvashp.tag_bind(self.s,"<ButtonPress-1>",SmallCircle)
+            if i > 0.05 and i <= 0.2:
+                x = random.randint(350, 450)
+                y = random.randint(150, 300)
+
+                def MedimumCircle(event):
+                    print(k)
+
+                self.e = self.canvashp.create_oval(x,y,x+40,y+40,fill='green')
+                self.canvashp.tag_bind(self.e,"<ButtonPress-1>",MedimumCircle)
+
+            if i > 0.2 and i <= 0.4:
+                x = random.randint(450, 500)
+                y = random.randint(300, 350)
+
+                def LargeCircle(event):
+                    print(k)
+
+                self.t = self.canvashp.create_oval(x,y,x+60,y+60,fill='green')
+                self.canvashp.tag_bind(self.t,"ButtonPress-1>",LargeCircle)
+
+            if i > 0.4:
+                x = random.randint(500, 600)
+                y = random.randint(400, 450)
+
+                def XLargeCirle(event):
+                    print(k)
+
+                self.r = self.canvashp.create_oval(x,y,x+80,x+100,fill='green')
+                self.canvashp.tag_bind(self.r,"<ButtonPRess-1>",XLargeCirle)
+
+        for ni in negative_tweets.values():
+            if ni < 0.0 and ni > -0.05:
+                x = random.randint(300, 350)
+                y = random.randint(100, 150)
+                self.s = self.canvashp.create_oval(x, y, x + 10, y + 10, fill='red')
+            if ni < -0.05 and ni > -0.2:
+                x = random.randint(350, 450)
+                y = random.randint(150, 300)
+                self.e = self.canvashp.create_oval(x, y, x + 20, y + 20, fill='red')
+            if ni < -0.2 and ni > -0.4:
+                x = random.randint(450, 500)
+                y = random.randint(300, 350)
+                self.t = self.canvashp.create_oval(x, y, x + 30, y + 30, fill='red')
+            if ni < -0.4:
+                x = random.randint(500, 600)
+                y = random.randint(400, 450)
+                self.r = self.canvashp.create_oval(x, y, x + 40, x + 50, fill='red')
+
+        self.canvashp.update()
+
 
         plt.style.use('ggplot')
         MovingAverage = Data['Close'].rolling(3).mean()
