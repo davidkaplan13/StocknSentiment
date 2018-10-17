@@ -610,8 +610,6 @@ class StockPage(Frame):
         self.canvashp.create_rectangle(300,50,600,350,outline='black',fill='white')
         self.canvashp.update()
 
-        def SmallCircle(event):
-            print("Circle Clicked")
 
         for k,i in positive_tweets.items():
             if i > 0.0 and i <= 0.05:
@@ -619,26 +617,36 @@ class StockPage(Frame):
                 y = random.randint(100,150)
 
                 def SmallCircle(event):
-                    print(k)
+                    while event.x < 300 and event.x <600 and event.y < 50 and event.y > 350:
+                        move = random.randint(0,4)
+                        if move == 1:
+                            self.canvashp.move(self.s,0,-10)
+                        if move == 2:
+                            self.canvashp.move(self.s,0,10)
+                        if move == 3:
+                            self.canvashp.move(self.s,-10,0)
+                        else:
+                            self.canvashp.move(self.s,10,0)
 
                 self.s = self.canvashp.create_oval(x,y,x+15,y+15,fill='green')
+
                 self.canvashp.tag_bind(self.s,"<ButtonPress-1>",SmallCircle)
+                self.canvashp.update()
+
             if i > 0.05 and i <= 0.2:
                 x = random.randint(350, 450)
                 y = random.randint(150, 300)
 
-                def MedimumCircle(event):
-                    print(k)
-
                 self.e = self.canvashp.create_oval(x,y,x+40,y+40,fill='green')
-                self.canvashp.tag_bind(self.e,"<ButtonPress-1>",MedimumCircle)
+                self.canvashp.tag_bind(self.e,"<ButtonPress-1>",k)
+
 
             if i > 0.2 and i <= 0.4:
                 x = random.randint(450, 500)
                 y = random.randint(300, 350)
 
                 def LargeCircle(event):
-                    print(k)
+                    print(list(positive_tweets.keys())[list(positive_tweets.values()).index(i)])
 
                 self.t = self.canvashp.create_oval(x,y,x+60,y+60,fill='green')
                 self.canvashp.tag_bind(self.t,"ButtonPress-1>",LargeCircle)
@@ -648,26 +656,28 @@ class StockPage(Frame):
                 y = random.randint(400, 450)
 
                 def XLargeCirle(event):
-                    print(k)
+                    print(list(positive_tweets.keys())[list(positive_tweets.values()).index(i)])
 
                 self.r = self.canvashp.create_oval(x,y,x+80,x+100,fill='green')
                 self.canvashp.tag_bind(self.r,"<ButtonPRess-1>",XLargeCirle)
 
+            self.canvashp.update()
+
         for ni in negative_tweets.values():
             if ni < 0.0 and ni > -0.05:
-                x = random.randint(300, 350)
+                x = random.randint(400, 350)
                 y = random.randint(100, 150)
                 self.s = self.canvashp.create_oval(x, y, x + 10, y + 10, fill='red')
             if ni < -0.05 and ni > -0.2:
-                x = random.randint(350, 450)
+                x = random.randint(450, 450)
                 y = random.randint(150, 300)
                 self.e = self.canvashp.create_oval(x, y, x + 20, y + 20, fill='red')
             if ni < -0.2 and ni > -0.4:
-                x = random.randint(450, 500)
+                x = random.randint(500, 500)
                 y = random.randint(300, 350)
                 self.t = self.canvashp.create_oval(x, y, x + 30, y + 30, fill='red')
             if ni < -0.4:
-                x = random.randint(500, 600)
+                x = random.randint(550, 600)
                 y = random.randint(400, 450)
                 self.r = self.canvashp.create_oval(x, y, x + 40, x + 50, fill='red')
 
@@ -717,8 +727,6 @@ class StockPage(Frame):
             colorup='green',
             colordown='red')
         plt.xlabel("Date")
-        #ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-        # ax.get_shared_x_axes().join(ax, ax2)
 
         ax4 = fig.add_subplot(2, 2, 3)
         Data['Date'] = Data.index.map(mdates.date2num)
