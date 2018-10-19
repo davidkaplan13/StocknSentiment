@@ -366,23 +366,28 @@ class Window(Frame):
         self.var = StringVar(self.master)
 
         self.Choice = ["AAPL", "MCD", "MSFT", "NKE", "INTC", "BA", "DIS"]
-        self.var.set(self.Choice[0])
+        #Choices of Tickers; Company Name Abbreviations
+        self.var.set(self.Choice[0]) # Displays the first ticker as the pre-set
         self.w = OptionMenu(self.master, self.var,
-                            *self.Choice)  # Drop Down Menu
+                            *self.Choice)  
+        # Creates the drop-down menu
         self.ButtonT = Button(
             self.master,
             text="Enter",
             font=("Avenir", 14),
             command=self.CompanyEntry)
-
-        self.LabelT.place(x=360, y=100)
+        # Creates a buttton to retrive user selection
+       
+        #==== Placement of widgets ====#   
+        self.LabelT.place(x=360, y=100) 
         self.w.place(x=360, y=130)
         self.ButtonT.place(x=360, y=170)
-
         self.LabelTQ.place(x=30, y=100)
         self.EntryTQ.place(x=30, y=130)
         self.ButtonTQ.place(x=30, y=170)
-
+        #==============================#
+        
+        #============ Creates text Labels ============#
         self.LabelWP = Label(
             self.master,
             text="Stock and Sentiment Program",
@@ -409,13 +414,16 @@ class Window(Frame):
             foreground='black',
             font=("Avenir", 14),
             relief='groove')
-
+        #============================================#
+        
+        #=== Places Labels on Screen ===#
         self.LabelTt.place(x=40, y=300)
         self.LabelTT.place(x=48, y=270)
         self.LabelSH.place(x=360, y=50)
         self.LabelGU.place(x=30, y=50)
         self.LabelWP.place(x=195, y=10)
-
+        #===============================#
+        
         self.ButtonHP = Button(
             self.master,
             text="Help",
@@ -423,8 +431,9 @@ class Window(Frame):
             background='light sky blue',
             activebackground='light sky blue',
             command=self.GoToHelpPage)
-
-        self.ButtonHP.place(x=600, y=10)
+        # Creates button to allow user to navigate to the help page #
+        self.ButtonHP.place(x=600, y=10) # Places button on the screen
+        
 
     def CompanyEntry(self):
         """Retrives Entry of USER"""
@@ -432,60 +441,69 @@ class Window(Frame):
         try:
             self.ButtonVG = Button(
                 self.master, text="View Graph", command=self.GoToStockPage)
-            self.ButtonVG.place(x=350, y=350)
+            # Creates a button tha redirects to a function in the class that calls on the stock page
+            self.ButtonVG.place(x=350, y=350) # Places the button on the screen
 
             self.LabelCP = Label(
                 self.master,
                 text="Loading...",
                 font=("Avenir", 12),
                 foreground='salmon')
-            self.LabelCP.place(x=350, y=320)
-            stockentry = self.var.get()
-            self.Stock.StockData()
+            # Text Label
+            self.LabelCP.place(x=350, y=320) # Label placed on the screen
+            stockentry = self.var.get() # Retrives the user stock entry
+            self.Stock.StockData() # Calls on the class stock, to pull 'EOD' data using the query
 
         except:
-            print("Error")
+            print("Error") # Basic error handling
 
     def TwitterQueryEntry(self):
         try:
             global query
-            query = self.EntryTQ.get()
+            query = self.EntryTQ.get() # Retrives user twitter query
             print(query)
-            self.Twitter.Main()
+            self.Twitter.Main() # Calls on the function main in the twitter class
 
         except:
-            print("Error")
+            print("Error") # Basic error handling
 
     def GoToHelpPage(self):
-        self.helppage = Toplevel(self.master)
+        #==== Redirects user to help page ====#
+        self.helppage = Toplevel(self.master) 
         self.app = HelpPage(self.helppage)
+        #=====================================#
 
     def GoToStockPage(self):
+        #==== Redirects user to stock page ====#
         self.stockpage = Toplevel(self.master)
         self.app = StockPage(self.stockpage)
+        #======================================#
 
 
 class HelpPage(Frame):
 
     def __init__(self, master=None):
+        #===== Initiate help page =====#
         Frame.__init__(self, master)
         self.masters = master
         self.master.geometry("660x440")
         self.create_Help_Page()
+        #==============================#
 
     def create_Help_Page(self):
-        self.masters.title("Help Page")
+        self.masters.title("Help Page") # Sets the title of the page to help page
         self.masters.configure(
             background='white', highlightbackground='light steel blue')
-
-        self.canvashp = Canvas(self.masters, width=670, height=480)
-        self.canvashp.grid(row=0, column=0, sticky='nsew')
-
+        # Sets the background of the help page to white
+        self.canvashp = Canvas(self.masters, width=670, height=480) # Creates a canvas
+        self.canvashp.grid(row=0, column=0, sticky='nsew') # Places the canvas at row 0 column 0
         self.rectangle_top = self.canvashp.create_rectangle(
             0, 0, 660, 45, fill='light sky blue', outline='light sky blue')
+        # Creates a rectangle. Used to make the page more user appeling
         self.rectangle_bottom = self.canvashp.create_rectangle(
             0, 405, 660, 440, fill='salmon', outline='salmon')
-
+        # Creates a rectangle. Used to make the page more user appeling
+        #================ Creates Text Labels =====================#
         self.LabelHp = Label(
             self.master,
             text="Help Page",
@@ -493,29 +511,31 @@ class HelpPage(Frame):
             foreground='white',
             activebackground='light sky blue',
             background='light sky blue')
-
-        self.LabelHp.place(x=280, y=10)
-
         self.LabelHP = Label(self.masters, text="Select an Option:")
+        #==========================================================#
         self.var = StringVar(self.masters)
         self.Choice = [
             "Help With Stock Graph", "Help with Twitter Query", "About"
-        ]
-        self.var.set(self.Choice[0])
+        ] # Creates choices user can select
+        self.var.set(self.Choice[0]) # sets the first choice as a pre-set
         self.w = OptionMenu(self.masters, self.var,
-                            *self.Choice)  # Drop Down Menu
+                            *self.Choice) 
+        # Creates a drop-down menu
         self.buttonx = Button(
             self.masters, text="Enter", command=self.getEntry)
-
+        # Creates a button that retrieves the user entry; calls on function getEntry
+        #== Places Labels and buttons ==#
+        self.LabelHp.place(x=280, y=10)
         self.LabelHP.place(x=39, y=100)
         self.w.place(x=30, y=130)
         self.buttonx.place(x=30, y=170)
+        #===============================#
 
     def getEntry(self):
-        entry = self.var.get()
+        entry = self.var.get() # Retrives user entry
         print(entry)
         if entry == "Help With Stock Graph":
-            self.HelpStock()
+            self.HelpStock() # Redirects and calls on function help stock
         elif entry == "Help with Twitter Query":
             self.HelpTwitter()
         else:
