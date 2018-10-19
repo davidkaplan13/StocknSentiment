@@ -537,42 +537,42 @@ class HelpPage(Frame):
         if entry == "Help With Stock Graph":
             self.HelpStock() # Redirects and calls on function help stock
         elif entry == "Help with Twitter Query":
-            self.HelpTwitter()
+            self.HelpTwitter() # Redirects and calls on functiono help twittter
         else:
             self.About()
 
     def HelpStock(self):
 
-        choice = ["AAPL", "MCD", "MSFT", "NKE", "INTC", "BA", "DIS"]
+        choice = ["AAPL", "MCD", "MSFT", "NKE", "INTC", "BA", "DIS"] # choices of tickers
         Ticker_Names = [
             "Apple", "McDonalds", "Microsoft", "Nike", "Intel Coporation",
             "Boeing Company", "The Walt Disney Company"
-        ]
+        ] # Creates an array with the associate names of the company
 
-        Ticker_Name = dict()
-        i = 0
-        for i in range(0, len(choice)):
-            Ticker_Name[choice[i]] = Ticker_Names[i]
-            i += 1
+        Ticker_Name = dict() # Creates an empty dictionary
+        i = 0 # Sets variable i = 0
+        for i in range(0, len(choice)): # Iterates from 0 to the length of choice array
+            Ticker_Name[choice[i]] = Ticker_Names[i] # Appends the ticker name as a key with the comapny name as a value
+            i += 1 # Adds 1 to variable i.
 
-        PrettyTicker_Name = json.dumps(Ticker_Name, indent=2)
+        PrettyTicker_Name = json.dumps(Ticker_Name, indent=2) # Idents the dictionary using the module json, for a nicer display
         self.LabelHS = Label(
             self.masters,
             text=PrettyTicker_Name,
             font=("Avenir", 12),
             foreground='black',
             relief='groove')
-
-        self.LabelHS.place(x=300, y=250)
+        # Creates a label displaying the ticker names
+        self.LabelHS.place(x=300, y=250) #Displays the label on the screen
 
     def HelpTwitter(self):
-
         self.LabelHT = Label(
             self.masters,
             text=
             "Enter your Query and Hit Enter Button \n This query will used to pull Twitter Data from the Database",
             font=("Avenir", 12))
-        self.LabelHT.place(x=300, y=100)
+        # Creates a text label
+        self.LabelHT.place(x=300, y=100) # Places the label on the screen
 
     def About(self):
         pass
@@ -581,27 +581,26 @@ class HelpPage(Frame):
 class StockPage(Frame):
 
     def __init__(self, master=None):
+        #==== Initiate stock page ====#
         Frame.__init__(self, master)
         self.mastersp = master
         self.master.geometry("660x440")
         self.Twitter = Twitter()
         self.GraphStock()
-
+        #=============================#
     def GraphStock(self):
-
-        self.mastersp.title("Tweet and Graph Page")
-        s = []
+        self.mastersp.title("Tweet and Graph Page") # Sets the title of the page
         print(OverallTotalToPlot)
-        df = pd.DataFrame({'values': OverallTotalToPlot})
-
-        self.canvashp = Canvas(self.mastersp, width=670, height=480)
-        self.canvashp.grid(row=0, column=0, sticky='nsew')
-
+        df = pd.DataFrame({'values': OverallTotalToPlot}) # Appends values of sentiment to a pandas dataframe
+        self.canvashp = Canvas(self.mastersp, width=670, height=480) # Creates a canvas
+        self.canvashp.grid(row=0, column=0, sticky='nsew') # Displays canvas at row = 0 and column =0
         self.rectangle_top = self.canvashp.create_rectangle(
             0, 0, 660, 45, fill='light sky blue', outline='light sky blue')
+        # Creates a rectangle for a nicer GUI display
         self.rectangle_bottom = self.canvashp.create_rectangle(
             0, 405, 660, 440, fill='salmon', outline='salmon')
-
+        # Creates a rectangle for a nicer GUI display
+        #================== Creates text labels ==================#
         self.Labelsp = Label(
             self.mastersp,
             text="Twiter Sentiment Page",
@@ -609,42 +608,41 @@ class StockPage(Frame):
             foreground='white',
             activebackground='light sky blue',
             background='light sky blue')
-
-        self.Labelsp.place(x=240, y=10)
-
         self.LabelGO = Label(
             self.mastersp,
             text=("Overall Sentiment of Tweets:", OverallSentiment),
             font=("Avenir", 14),
             relief='groove')
-
         self.LabelWI = Label(
             self.mastersp,
             text=("Information About Indicators/Graph:"),
             font=("Avenir", 14))
+        #==========================================================#
+        self.Labelsp.place(x=240, y=10)
         self.varc = StringVar(self.master)
-        self.Choices = ["Bollinger Bands", "Moving Average", "Candlestick"]
-        self.varc.set(self.Choices[0])
+        self.Choices = ["Bollinger Bands", "Moving Average", "Candlestick"] # Creates Choices
+        self.varc.set(self.Choices[0]) # Sets the first chocie as a pre-set for display
         self.om = OptionMenu(self.mastersp, self.varc,
-                             *self.Choices)  # Drop Down Menu
+                             *self.Choices)  # Creates drop-down menu
         self.buttonx = Button(
             self.mastersp, text="Enter", command=self.GetEntryIndicator)
-
+        # Create a button that retrieves user entry
+        # === Places label and Menu ===#
+        self.Labelsp.place(x=240, y=10)
         self.LabelWI.place(x=20, y=130)
         self.om.place(x=20, y=160)
         self.buttonx.place(x=20, y=190)
-
         self.LabelGO.place(x=20, y=100)
-
+        #==============================#
         print("YES", positive_tweets)
         print("No,", negative_tweets)
 
-        self.canvashp.create_rectangle(300,50,600,350,outline='black',fill='white')
-        self.canvashp.update()
+        self.canvashp.create_rectangle(300,50,600,350,outline='black',fill='white') #creates a rectangle
+        self.canvashp.update() # Updates the canvas
 
 
-        for k,i in positive_tweets.items():
-            if i > 0.0 and i <= 0.05:
+        for k,i in positive_tweets.items(): # Iterates for key and value in the positive tweets dictionary
+            if i > 0.0 and i <= 0.05: # If statement; i refreing to value in dictionary
                 x = random.randint(300,350)
                 y = random.randint(100,150)
 
