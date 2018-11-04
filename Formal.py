@@ -49,77 +49,103 @@ positive_tweets = dict()
 # ===== Arrays(For Classification of Emojis) =====#
 
 positiveEmojiList = [
-    ':smile:',
-    ':simple_smile:',
-    ':laughing:',
-    ':blush:',
-    ':smiley:',
-    ':relaxed:',
-    ':heart_eyes:',
-    ':grin:',
-    ':grinning:',
-    ':kissing:',
-    ':sweat_smile:',
-    ':joy:',
-    ':satisfied:',
-    ':crown:',
-    ':face_with_tears_of_joy:',
-    ':fire:',
-    ':money_bag:',
-    ':dollar_banknote:',
-    ':glowing_star:',
-    ':rolling_on_the_floor_laughing:',
-    ':slightly_smiling_face:',
-    ':smiling_face:'
+    'smile',
+    'simple_smile',
+    'laughing',
+    'blush',
+    'smiley',
+    'relaxed',
+    'heart_eyes',
+    'grin',
+    ':grinning',
+    'kissing',
+    'sweat_smile',
+    'joy',
+    'satisfied',
+    'crown',
+    'face_with_tears_of_joy',
+    'fire',
+    'money_bag',
+    'dollar_banknote',
+    'glowing_star',
+    'rolling_on_the_floor_laughing',
+    'slightly_smiling_face',
+    'smiling_face'
 ]
 
 negativeEmojiList = [
-    ':worried:',
-    ':frowning:',
-    ':anguished:',
-    ':grimacing:',
-    ':disappointed_relieved:',
-    ':unamused:',
-    ':fearful:',
-    ':sob:',
-    ':cry:',
-    ':angry:',
-    ':rage:',
-    ':frowning:',
-    ':man_shrugging:',
-    ':face_screaming_in_fear:',
-    ':crying_face:',
-    ':pouting_face:',
-    ':flushed_face:'
+    'worried',
+    'frowning',
+    'anguished',
+    'grimacing',
+    'disappointed_relieve',
+    'unamused',
+    'fearful',
+    'sob',
+    'cry',
+    'angry',
+    'rage',
+    'frowning',
+    'man_shrugging',
+    'face_screaming_in_fear',
+    'crying_face',
+    'pouting_face',
+    'flushed_face'
 ]
 
 WordWeighPositive = {
-    "amuse":"3","awesome":"4",
-    "breathtaking":"5","brilliant":"4",
-    "excellent":"3","excited":"3",
-    "fabulous": "4","facinate":"3",
-    "faithful":"3","fantastic":"4",
-    "funny":"3","good":"2",
-    "great":"3", "happiness": "2",
-    "hurrah":"4","impressive":"4",
-    "perfect":"3","love":"5"
+    "amuse":"3",
+    "awesome":"4",
+    "breathtaking":"5",
+    "brilliant":"4",
+    "excellent":"3",
+    "excited":"3",
+    "fabulous": "4",
+    "facinate":"3",
+    "faithful":"3",
+    "fantastic":"4",
+    "funny":"3",
+    "good":"2",
+    "great":"3",
+    "happiness": "2",
+    "hurrah":"4",
+    "impressive":"4",
+    "perfect":"3",
+    "love":"5"
 }
 
 WordWeighNegative = {
-    "angry":"3","abuse":"5",
-    "accuse":"2","aggressive":"3",
-    "betrayal":"3","bullshit":"4",
-    "depressive":"4","stupid":"2",
-    "kill":"3","lunatic":"4"
+    "angry":"3",
+    "abuse":"5",
+    "accuse":"2",
+    "aggressive":"3",
+    "betrayal":"3",
+    "bullshit":"4",
+    "depressive":"4",
+    "stupid":"2",
+    "kill":"3",
+    "lunatic":"4"
 }
 
 negationWords = [
-    "no","not","none",
-    "nothing","never","nowhere",
-    "wasnt","wasn't","shouldnt",
-    "shouldn't","couldnt","couldn't",
-    "wont","won't","cant",
-    "can't","don't","dont"
+    "no",
+    "not",
+    "none",
+    "nothing",
+    "never",
+    "nowhere",
+    "wasnt",
+    "wasn't",
+    "shouldnt",
+    "shouldn't",
+    "couldnt",
+    "couldn't",
+    "wont",
+    "won't",
+    "cant",
+    "can't",
+    "don't",
+    "dont"
 ]
 #==================================================#
 
@@ -180,6 +206,9 @@ class Twitter(object):
         global negativeCounter
         positiveCounter = 0  # Sets the positive counter to 0
         negativeCounter = 0  # Sets the negative counter to 0
+
+        CleanTweetNoEmoji = CleanTweetNoEmoji.replace(":",' ')
+        CleanTweetNoEmoji = CleanTweetNoEmoji.replace("!",'')
 
         for word in CleanTweetNoEmoji.split():  # Splits the sentence to words
             if word in positiveEmojiList:  # Checks for emojis in the positive emoji list
@@ -255,6 +284,10 @@ class Twitter(object):
         global OverallTotal
         positiveTweets = 0  # Sets the positve tweet counter to 0
         negativeTweets = 0  # Sets the negative tweet counter to 0
+
+        CleanTweet = CleanTweet.replace(":",'')
+        CleanTweet = CleanTweet.replace("!",'')
+        CleanTweet = CleanTweet.replace("@rt",'')
 
         TotalPos = posWordCounter + positiveCounter  # Adds the positive word counter and positve emoji counter together
         TotalNeg = negWordCounter + negativeCounter  # Adds the negative word counter and negative emoji counter together
@@ -683,23 +716,24 @@ class StockPage(Frame):
         # Create a button that retrieves user entry
         #==== Places label and Menu ====#
         self.Labelsp.place(x=240, y=10)
-        self.LabelWI.place(x=20, y=130)
-        self.om.place(x=20, y=160)
-        self.buttonx.place(x=20, y=190)
-        self.LabelGO.place(x=20, y=100)
+        self.LabelWI.place(x=20, y=50)
+        self.om.place(x=20, y=80)
+        self.buttonx.place(x=20, y=100)
+        self.LabelGO.place(x=20, y=140)
         # ==============================#
         print("YES", positive_tweets)
         print("No,", negative_tweets)
 
-        self.canvashp.create_rectangle(300, 50, 600, 350, outline='black', fill='white')  # creates a rectangle
+        self.canvashp.create_rectangle(10, 200,650, 400, outline='black', fill='white')  # creates a rectangle
         self.canvashp.update()  # Updates the canvas
 
-        #ypos = 110
-        #for i in positive_tweets:
-            #self.LabelPT = Label(self.mastersp,text=i,font=("Avenir",6))
-            #self.LabelPT.place(x=300,y=ypos)
-           # ypos += 15
+        positive_tweets_lines = json.dumps(positive_tweets,indent=2) # Indents the positive tweets with lines for a better display
+        self.LabelPT = Label(self.mastersp,text=positive_tweets_lines,font=("Avenir",6)) # Creates the text label
+        self.LabelPT.place(x=50,y=270) # Places the label on the frame
 
+        negative_tweets_lines = json.dumps(negative_tweets,indent=2) # Indents the negative tweets with lines for a better display
+        self.labelNT = Label(self.mastersp,text=negative_tweets_lines,font=("Avenir",6)) # Creates the text label
+        self.labelNT.place(x=50,y=205) # Places the text label
 
         plt.style.use('ggplot')
         MovingAverage = Data['Close'].rolling(3).mean()
@@ -721,40 +755,40 @@ class StockPage(Frame):
         plt.plot(Data['MA50'], label="Moving Average", color="blue") # Plots the moving average; Adds a label for the line, and sets the color of the line to blue
         plt.plot(Data['UpBB'], Label="Upper Bollinger Band", color="black") # Plots the upper bollinger band; sets the label and sets the color of the line
         plt.plot(Data['LowBB'], Label="Lower Bollinger Band", color="grey") # Plots the lower bollinger band; sets the label and sets the color of the line
-        plt.xlabel("Date")
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-        plt.legend(loc='best')
-        ax.set_ylabel('Value')
+        plt.xlabel("Date") # Places x-axis label of Date
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d')) # Formats he axis to months and days
+        plt.legend(loc='best') # Places the key in the best location on the graph
+        ax.set_ylabel('Value') # Assigns the y label to Value
 
-        Data['Date'] = Data.index.map(mdates.date2num)
-        candlestickData = Data[['Date', 'Open', 'High', 'Low', 'Close']]
+        Data['Date'] = Data.index.map(mdates.date2num) # Converts the dates to number format to allow for it to be plotted
+        candlestickData = Data[['Date', 'Open', 'High', 'Low', 'Close']] # Creates and array full of the data needed to generate a candlestick graph
         candlestick_ohlc(
-            ax,
-            candlestickData.values,
-            width=.3,
-            colorup='green',
-            colordown='red')
-        plt.xlabel("Date")
+            ax, # Plots the candlestick graph on the main ax
+            candlestickData.values, # uses the candlestick data and extract the values of each column
+            width=.3, # Sets the width of the bars to 0.3
+            colorup='green', # Sets the up colour of the bar to green
+            colordown='red') # Sets the down colour of the bar tot red
+        plt.xlabel("Date") # Sets the x-label as Date
 
-        ax4 = fig.add_subplot(2, 2, 3)
-        Data['Date'] = Data.index.map(mdates.date2num)
-        ax4.plot(Data['Close'], label='Close Price')
-        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
-        ax4.set_xlabel('Date')
-        ax4.set_ylabel('Value')
-        ax4.legend(loc='best')
+        ax4 = fig.add_subplot(2, 2, 3) # Creates another subplot
+        Data['Date'] = Data.index.map(mdates.date2num) # Converts the dates to number format to allow for it to be plotted
+        ax4.plot(Data['Close'], label='Close Price') # Plots the closing price
+        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%d')) # formats the x-axis dates as days
+        ax4.set_xlabel('Date') # Adds a x-axis label
+        ax4.set_ylabel('Value') # Adds a y-axis label
+        ax4.legend(loc='best') # Adds a key in the best location on the graph
 
-        ax5 = fig.add_subplot(2, 2, 4)
-        ax5.scatter(df, df['values'], label='Sentiment Value', color='blue')
-        cofficient = pearsonr((df['values'][0:7]), Data['Close'])
+        ax5 = fig.add_subplot(2, 2, 4) # Adds another subplot to the graph
+        ax5.scatter(df, df['values'], label='Sentiment Value', color='blue') # scatters the tweet sentiment values
+        cofficient = pearsonr((df['values'][0:7]), Data['Close']) # Creates the correlation coeffienct
         print("correlaction coefficient: ", str(cofficient))
         ax5.plot(
             cofficient,
-            label='Pearson correlation coefficient',
+            label='Pearson correlation coefficient', # Plots the correlation Coefficient
             color='magenta')
-        ax5.set_xlabel('Tweet')
-        ax5.legend(loc='best')
-        plt.show(ax)
+        ax5.set_xlabel('Tweet') # Adds an x-axis label
+        ax5.legend(loc='best') # Adds the key to the best location on the subplot
+        plt.show(ax) # Shows all of the graph
 
     def GetEntryIndicator(self):
         choice_entry = self.varc.get() # Get user entry from drop down menu
@@ -765,29 +799,25 @@ class StockPage(Frame):
                 (
                     "Bollinger Bands: \nWhen the market is volatile, the bands widen.\n When the market is under a less volatile period, the bands contract."
                     ),
-                font=("Avenir", 14)) # Creates a text label
-            self.LabelBB.place(x=30, y=200)
+                font=("Avenir", 10)) # Creates a text label
+            self.LabelBB.place(x=200, y=50)
 
         elif choice_entry == 'Moving Average':
             self.LabelMA = Label(
                 self.mastersp,
                 text=("Moving Average is calculated by..."),
-                font=("Avenir", 14))
-            self.LabelMA.place(x=30, y=280)
+                font=("Avenir", 10)) # Creates a text label
+            self.LabelMA.place(x=200, y=100) # Plots a text label
 
         else:
             self.LabelCS = Label(
                 self.mastersp,
                 text=("Candlestick Graph is generated by..."),
-                font=("Avenir", 14))
-            self.LabelCS.place(x=30, y=320)
-
-    def FindCorrelation(self):
-        pass
+                font=("Avenir", 10)) # Creates a text label
+            self.LabelCS.place(x=200, y=150) # Plots a text label
 
 
 root = Tk()
 root.geometry("660x440")
-
 app = Window(root)
-root.mainloop()
+root.mainloop() # Runs the tkinter main window where the program starts from.
