@@ -728,11 +728,11 @@ class StockPage(Frame):
         self.canvashp.update()  # Updates the canvas
 
         positive_tweets_lines = json.dumps(positive_tweets,indent=2) # Indents the positive tweets with lines for a better display
-        self.LabelPT = Label(self.mastersp,text=positive_tweets_lines,font=("Avenir",6)) # Creates the text label
+        self.LabelPT = Label(self.mastersp,text=positive_tweets_lines,font=("Avenir",6),foreground='SpringGreen3') # Creates the text label
         self.LabelPT.place(x=50,y=270) # Places the label on the frame
 
         negative_tweets_lines = json.dumps(negative_tweets,indent=2) # Indents the negative tweets with lines for a better display
-        self.labelNT = Label(self.mastersp,text=negative_tweets_lines,font=("Avenir",6)) # Creates the text label
+        self.labelNT = Label(self.mastersp,text=negative_tweets_lines,font=("Avenir",6),foreground='tomato') # Creates the text label
         self.labelNT.place(x=50,y=205) # Places the text label
 
         plt.style.use('ggplot')
