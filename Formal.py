@@ -49,103 +49,58 @@ positive_tweets = dict()
 # ===== Arrays(For Classification of Emojis) =====#
 
 positiveEmojiList = [
-    'smile',
-    'simple_smile',
-    'laughing',
-    'blush',
-    'smiley',
-    'relaxed',
-    'heart_eyes',
-    'grin',
-    ':grinning',
-    'kissing',
-    'sweat_smile',
-    'joy',
-    'satisfied',
-    'crown',
-    'face_with_tears_of_joy',
-    'fire',
-    'money_bag',
-    'dollar_banknote',
-    'glowing_star',
-    'rolling_on_the_floor_laughing',
-    'slightly_smiling_face',
-    'smiling_face'
+    'smile', 'simple_smile', 'laughing', 'blush', 'smiley', 'relaxed',
+    'heart_eyes', 'grin', ':grinning', 'kissing', 'sweat_smile', 'joy',
+    'satisfied', 'crown', 'face_with_tears_of_joy', 'fire', 'money_bag',
+    'dollar_banknote', 'glowing_star', 'rolling_on_the_floor_laughing',
+    'slightly_smiling_face', 'smiling_face'
 ]
 
 negativeEmojiList = [
-    'worried',
-    'frowning',
-    'anguished',
-    'grimacing',
-    'disappointed_relieve',
-    'unamused',
-    'fearful',
-    'sob',
-    'cry',
-    'angry',
-    'rage',
-    'frowning',
-    'man_shrugging',
-    'face_screaming_in_fear',
-    'crying_face',
-    'pouting_face',
+    'worried', 'frowning', 'anguished', 'grimacing', 'disappointed_relieve',
+    'unamused', 'fearful', 'sob', 'cry', 'angry', 'rage', 'frowning',
+    'man_shrugging', 'face_screaming_in_fear', 'crying_face', 'pouting_face',
     'flushed_face'
 ]
 
 WordWeighPositive = {
-    "amuse":"3",
-    "awesome":"4",
-    "breathtaking":"5",
-    "brilliant":"4",
-    "excellent":"3",
-    "excited":"3",
+    "amuse": "3",
+    "awesome": "4",
+    "breathtaking": "5",
+    "brilliant": "4",
+    "excellent": "3",
+    "excited": "3",
     "fabulous": "4",
-    "facinate":"3",
-    "faithful":"3",
-    "fantastic":"4",
-    "funny":"3",
-    "good":"2",
-    "great":"3",
+    "facinate": "3",
+    "faithful": "3",
+    "fantastic": "4",
+    "funny": "3",
+    "good": "2",
+    "great": "3",
     "happiness": "2",
-    "hurrah":"4",
-    "impressive":"4",
-    "perfect":"3",
-    "love":"5"
+    "hurrah": "4",
+    "impressive": "4",
+    "perfect": "3",
+    "love": "5"
 }
 
 WordWeighNegative = {
-    "angry":"3",
-    "abuse":"5",
-    "accuse":"2",
-    "aggressive":"3",
-    "betrayal":"3",
-    "bullshit":"4",
-    "depressive":"4",
-    "stupid":"2",
-    "kill":"3",
-    "lunatic":"4"
+    "angry": "3",
+    "abuse": "5",
+    "accuse": "2",
+    "aggressive": "3",
+    "betrayal": "3",
+    "bullshit": "4",
+    "depressive": "4",
+    "stupid": "2",
+    "kill": "3",
+    "lunatic": "4"
 }
 
 negationWords = [
-    "no",
-    "not",
-    "none",
-    "nothing",
-    "never",
-    "nowhere",
-    "wasnt",
-    "wasn't",
-    "shouldnt",
-    "shouldn't",
-    "couldnt",
-    "couldn't",
-    "wont",
-    "won't",
-    "cant",
-    "can't",
-    "don't",
-    "dont"
+    "no", "not", "none", "nothing", "never", "nowhere", "wasnt", "wasn't",
+    "shouldnt", "shouldn't", "couldnt", "couldn't", "wont", "won't", "cant",
+    "can't", "don't", "dont"
 ]
 
 #==================================================#
@@ -192,6 +147,19 @@ class Twitter(object):
         except:
             print("Error")  # Basic Error Handling
 
+    def CleanTweets(self, CleanTweet):
+
+        CleanTweet = CleanTweet.lower()
+        CleanTweet = CleanTweet.replace(":", "")
+        CleanTweet = CleanTweet.replace("#", "")
+        CleanTweet = CleanTweet.replace("!", "")
+        CleanTweet = CleanTweet.replace(",", "")
+        CleanTweet = CleanTweet.replace("@rt", "")
+        CleanTweet = CleanTweet.replace(";", "")
+        CleanTweet = CleanTweet.replace("@", "")
+
+        return CleanTweet
+
     def IdentifyEmoji(self, CleanTweet):
         """
         Identify Emojis
@@ -210,11 +178,8 @@ class Twitter(object):
         """
         Count sentiment of Emojis by comparing emojis to the array of positive and negative emojis
         """
-        global positiveCounter
-        global negativeCounter
-        positiveCounter = 0  # Sets the positive counter to 0
-        negativeCounter = 0  # Sets the negative counter to 0
-
+        positiveCounter = 0
+        negativeCounter = 0
         CleanTweetNoEmoji = CleanTweetNoEmoji.replace(":", ' ')
         CleanTweetNoEmoji = CleanTweetNoEmoji.replace("!", '')
 
@@ -230,9 +195,7 @@ class Twitter(object):
 
         return positiveCounter, negativeCounter  # Return positive and negative emoji counter
 
-    def ClassifyWords(self, CleanTweet):
-        global posWordCounter
-        global negWordCounter
+    def ClassifyWords(self, FullyCleanTweet):
 
         posWordCounter = 0  # Sets the positive word counter to 0
         negWordCounter = 0  # Sets the negative word counter to 0
@@ -242,160 +205,127 @@ class Twitter(object):
         NegFile = open(
             "NegativeWords.txt").read()  # Reads the negative word file
 
-        nomarks = CleanTweet.replace('!',
-                                     '')  # Removes exclatiom marks from tweets
-        nomarks = nomarks.lower(
-        )  # Converts the text to lower, so no capitals as the word list are all lower case
-        nomarks = nomarks.replace('.', '')  # Replaces full stops with spaces
-        nomarks = nomarks.replace(':', '')  # Replaces colons with spaces
+        ClassifyTweet = FullyCleanTweet
 
         word_counter = dict()  # Creates an empty dictionary
 
         try:
-            for words in nomarks.split(
-            ):  # Iterates through words in the tweet text
-                if words in word_counter:
-                    word_counter[
-                        words] += 1  # Adds 1 to diciontary for associted word if already present in dictionary
+            Split = ClassifyTweet.split()
+            for i in range(len(Split)):
+                if Split[i] in word_counter:
+                    word_counter[Split[i]] += 1
                 else:
-                    word_counter[
-                        words] = 1  # Sets the value of the key (Word) to 1.
-            for words in nomarks.split():  # Splits the sentence into words
-                if words in PosFile.splitlines(
-                ):  # Checks if a word in the text is present in the positive file
-                    if word_counter[
-                            words] > 1:  # If the associated word is present in the text more than once
-                        for k in WordWeighPositive:  # Iterates through the WordWeighPositive
-                            if k[words] in WordWeighPositive:  # Checks if the word is in the list
-                                posWordCounter += (
-                                    word_counter[words] *
-                                    WordWeighPositive.get(k[words])
-                                )  # Multiply the occurence of the word by its special weighing
-                                print(k[words])  # Print Statement
-                                print(posWordCounter)  # Print Statement
-                            else:
-                                posWordCounter += (
-                                    word_counter[words] * 1.4
-                                )  # sets the positive counter to equal 1.4 * the value for the associated key word
-                        print(word_counter[words],
-                              posWordCounter)  # Print Statement
-                        print(words)  # Print Statement
-                    else:
-                        posWordCounter += 1  # If word present in positive file but not present more than once in the tweet, then add 1 to the positive word counter
-                        print(words)  # Print Statement
-                    if words in negationWords and words + 1 in PosFile.splitlines(
-                    ):  # checks if the first word is in the negation list and then checks if the next word is positive
-                        negWordCounter += 1  # Adds 1 to the negative counter
+                    word_counter[Split[i]] = 1
+            print(word_counter)
 
-                elif words in NegFile.splitlines(
-                ):  # Checks if a word in the text is present in the negative file
-                    if word_counter[
-                            words] > 1:  # If the associated word is present in the text more than once
-                        for key in WordWeighNegative:  # Iterates through the WordWeighNegative list
-                            if key[words] in WordWeighNegative:  # checks for the word in the list
-                                negWordCounter += (
-                                    word_counter[words] *
-                                    WordWeighNegative.get(key[words])
-                                )  # multiply the occurence of the word by its special weighing
-                            else:
-                                negWordCounter += (
-                                    word_counter[words] * 1.4
-                                )  # sets the negative counter to equal 1.4 * the value for the associated key word
-                        print(word_counter[words],
-                              negWordCounter)  # Print Statement
-                        print(words)  # Print Statement
-                    else:
-                        negWordCounter += 1  # If word present in negative file but not present more than once in the tweet, then add 1 to the positive word counter
-                        print(words)
+            for n in range(len(Split)):
+                if Split[n] in PosFile:
+                    posWordCounter += 1
+                    Posoccurence = word_counter.get(Split[n])
+                    print("Occurence", Posoccurence)
+                    if Posoccurence > 1:
+                        if Split[n] in WordWeighPositive:
+                            posWordCounter = posWordCounter * WordWeighPositive.get(
+                                Split[n])
+                        else:
+                            posWordCounter = posWordCounter + Posoccurence
+                        print(posWordCounter)
+                        break
+
+            for l in range(len(Split)):
+                if Split[l] in NegFile:
+                    negWordCounter += 1
+                    Negoccurence = word_counter.get(Split[l])
+                    print("NegOccurence:", Negoccurence)
+                    if Negoccurence > 1:
+                        if Split[l] in WordWeighNegative:
+                            negWordCounter = negWordCounter * WordWeighNegative.get(
+                                Split[l])
+                        else:
+                            negWordCounter = negWordCounter + Negoccurence
+                        print(negWordCounter)
+                        break
+
+            for k in range(len(Split)):
+                if Split[k] in PosFile:
+                    if Split[k - 1] in NegFile:
+                        negWordCounter += 1
+                        posWordCounter -= 1
         except:
-            print("Error")  # Basic Error Handling
+            print("error")
 
         return posWordCounter, negWordCounter
 
-    def FrequencyTables(self, CleanTweet):
-        global OverallTotal
+    def FrequencyTables(self, classifyWords, FullyCleanTweet, posWordCounter,negWordCounter, positiveCounter, negativeCounter):
+
         positiveTweets = 0  # Sets the positve tweet counter to 0
         negativeTweets = 0  # Sets the negative tweet counter to 0
 
-        CleanTweet = CleanTweet.replace(":", '')
-        CleanTweet = CleanTweet.replace("!", '')
-        CleanTweet = CleanTweet.replace("@rt", '')
-
         TotalPos = posWordCounter + positiveCounter  # Adds the positive word counter and positve emoji counter together
         TotalNeg = negWordCounter + negativeCounter  # Adds the negative word counter and negative emoji counter together
-        OverallTotal = (TotalPos - TotalNeg) / (
-            len(CleanTweet.split())
-        )  # Subtract negative counter from positive counter and divides result
-        OverallTotalToPlot.append(
-            OverallTotal
-        )  # Appends Results to array which would be used to plot sentiment of tweets in the main graph
+
+        OverallTotal = (TotalPos - TotalNeg) / (len(FullyCleanTweet.split()))  # Subtract negative counter from positive counter and divides result
+        print("OverallTotal", OverallTotal)
+        OverallTotalToPlot.append(OverallTotal)  # Appends Results to array which would be used to plot sentiment of tweets in the main graph
 
         if OverallTotal > 0:
             print("Positive Tweet", OverallTotal)
             try:
                 positive_tweets[
-                    CleanTweet] = OverallTotal  # Appends the tweet and sets the value to sentiment result
-                print(
-                    positive_tweets
-                )  # Prints out the positive value to user on the python console
+                    FullyCleanTweet] = OverallTotal  # Appends the tweet and sets the value to sentiment result
+                print(positive_tweets)  # Prints out the positive value to user on the python console
             except:
                 print("error")  # Basic Error handling
         elif OverallTotal < 0:
             print("Negative Tweet", OverallTotal)
             try:
                 negative_tweets[
-                    CleanTweet] = OverallTotal  # Append the tweet and sets the value to sentiment result
-                print(
-                    negative_tweets
-                )  # Prints out the negative value to user on the python console
-
+                    FullyCleanTweet] = OverallTotal  # Append the tweet and sets the value to sentiment result
+                print(negative_tweets)  # Prints out the negative value to user on the python console
             except:
                 print("error")  # Basic Error Handling
-
         else:
-            print(
-                "Neutral"
-            )  # Prints out neutral for any other tweet that is not classified in the If statements above.
+            print("Neutral")  # Prints out neutral for any other tweet that is not classified in the If statements above.
 
-        return positiveTweets, negativeTweets, OverallTotal  # Return Variables
+        return OverallTotal, positiveTweets, negativeTweets  # Return Variables
 
     def Main(self):
 
-        search = Cursor(
-            self.api.search, q=('#' + str(query)), lang='en', count=10)
         # Search Method for Twitter API. Uses the user entry for the query
         # Sets the parameters of the search method; Language = english, Count of retweets = 10
+        search = Cursor(
+            self.api.search, q=('#' + str(query)), lang='en', count=10)
 
-        global counterOfTweets
-        counterOfTweets = 0  # Sets the counter of tweets to 0
+        self.counterOfTweets = 0  # Sets the counter of tweets to 0
         TotalPosTweets = 0  # Sets the positive tweet counter to 0
         TotalNegTweets = 0  # Sets the neutral tweets counter to 0
-        TotalNeuTweets = 0  # Sets the negatuve tweets counter to 0
+        TotalNeuTweets = 0  # Sets the negative tweets counter to 0
 
         try:
-            for tweet in search.items(20):  # Iterates through 20 pulled tweets
-                counterOfTweets += 1  # Adds 1 to the parsed tweets
-                CleanTweet = self.Remove_URL(
-                    tweet)  # Calls on Remove URL function
-                CleanTweetNoEmoji = self.IdentifyEmoji(
-                    CleanTweet)  # Calls on Identify Emoji function
-                CountEmoji = self.CountSentimentOfEmojis(
-                    CleanTweetNoEmoji
-                )  # Calls on classification of emojis function
-                classifyWords = self.ClassifyWords(
-                    CleanTweet)  # Calls on classify word function
-                countNumbers = self.FrequencyTables(
-                    CleanTweet)  # Calls on Sentiment calculator
+            #MAIN LOOP, CALLS ON FUNCTION IN THE TWITTER CLASS
+            for tweet in search.items(20):
+                self.counterOfTweets += 1  # Adds 1 to the parsed tweets
+                CleanTweet = self.Remove_URL(tweet)
+                self.FullyCleanTweet = self.CleanTweets(CleanTweet)  #
+                self.CleanTweetNoEmoji = self.IdentifyEmoji(
+                    self.FullyCleanTweet)
+                self.CountEmoji = self.CountSentimentOfEmojis(
+                    self.CleanTweetNoEmoji)
+                self.classifyWords = self.ClassifyWords(self.FullyCleanTweet)
+                self.x, self.y = self.classifyWords
+                self.xe, self.ye = self.CountEmoji
+                self.countNumbers = self.FrequencyTables(
+                    self.classifyWords, self.FullyCleanTweet, self.x, self.y,
+                    self.xe, self.ye)  # Calls on Sentiment calculator
+                self.os, self.pt, self.nt = self.countNumbers
 
-                print("noEmoji:", counterOfTweets, CleanTweet,
-                      CleanTweetNoEmoji, CountEmoji, classifyWords,
-                      countNumbers)
-                if OverallTotal > 0:  # If the Overall value of sentiment is bigger than 0
+                print("Tweet:", self.counterOfTweets, self.FullyCleanTweet,
+                      self.CleanTweetNoEmoji, self.CountEmoji,
+                      self.classifyWords, self.countNumbers)
+                if self.os > 0:  # If the Overall value of sentiment is bigger than 0
                     TotalPosTweets += 1  # Add 1 to the positve tweet counter
-
-                elif OverallTotal < 0:  # If Overall value of sentiment is bigger than 0
+                elif self.os < 0:  # If Overall value of sentiment is bigger than 0
                     TotalNegTweets += 1  # Add 1 to the negative tweet counter
-
                 else:
                     TotalNeuTweets += 1  # Add 1 to neutral tweet counter
 
@@ -405,14 +335,14 @@ class Twitter(object):
             OverallSentiment = ((TotalPosTweets - TotalNegTweets) / (
                 TotalPosTweets + TotalNegTweets + TotalNeuTweets))
             # Overall Sentiment Shows the overall sentiment of all tweets
-            # Calculated by subtracting negaitve tweets from positive tweets and dividing the result by all the parsed tweets
-            print("Overall the Total Sentiment of", str(counterOfTweets),
+            # Calculated by subtracting negative tweets from positive tweets and dividing the result by all the parsed tweets
+            print("Overall the Total Sentiment of", str(self.counterOfTweets),
                   "tweets is:", OverallSentiment)
             # Print statement showing the overall sentiment of CounterOfTweets(20) and the overall sentiment of those tweets
             if OverallSentiment > 0:
                 print(
                     "Hence , Positive"
-                )  # If the pverall sentiment is bigger than 0, then overall sentiment of 20 parsed tweets is positive
+                )  # If the overall sentiment is bigger than 0, then overall sentiment of 20 parsed tweets is positive
             elif OverallSentiment < 0:
                 print(
                     "Hence, Negative"
@@ -431,7 +361,7 @@ class Twitter(object):
 class Stock(object):
     def __init__(self):
         """
-        Access the Quandl Databse via API keys
+        Access the Quandl Database via API keys
         """
         quandl.ApiConfig.api_key = Quandl_API
         self.Twitter = Twitter()
@@ -725,7 +655,7 @@ class HelpPage(Frame):
             "Enter your Query and Hit Enter Button \n This query will used to pull Twitter Data from the Database",
             font=("Avenir", 12))
         # Creates a text label
-        self.LabelHT.place(x=300, y=100)  # Places the label on the screen
+        self.LabelHT.place(x=300, y=250)  # Places the label on the screen
 
     def About(self):
         pass
@@ -811,7 +741,7 @@ class StockPage(Frame):
             text=positive_tweets_lines,
             font=("Avenir", 6),
             foreground='SpringGreen3')  # Creates the text label
-        self.LabelPT.place(x=50, y=270)  # Places the label on the frame
+        self.LabelPT.place(x=25, y=270)  # Places the label on the frame
 
         negative_tweets_lines = json.dumps(
             negative_tweets, indent=2
@@ -915,22 +845,26 @@ class StockPage(Frame):
                 text=
                 ("Bollinger Bands: \nWhen the market is volatile, the bands widen.\n When the market is under a less volatile period, the bands contract."
                  ),
-                font=("Avenir", 10))  # Creates a text label
+                font=("Avenir", 8))  # Creates a text label
             self.LabelBB.place(x=200, y=50)
 
         elif choice_entry == 'Moving Average':
             self.LabelMA = Label(
                 self.mastersp,
-                text=("Moving Average is calculated by..."),
-                font=("Avenir", 10))  # Creates a text label
-            self.LabelMA.place(x=200, y=100)  # Plots a text label
+                text=
+                ("Moving Average is calculated by taking the arithmetic mean of a given set of values."
+                 ),
+                font=("Avenir", 8))  # Creates a text label
+            self.LabelMA.place(x=200, y=90)  # Plots a text label
 
         else:
             self.LabelCS = Label(
                 self.mastersp,
-                text=("Candlestick Graph is generated by..."),
-                font=("Avenir", 10))  # Creates a text label
-            self.LabelCS.place(x=200, y=150)  # Plots a text label
+                text=
+                ("A candlestick is a type of price chart that displays the high, low, open and closing prices of a security for a specific period."
+                 ),
+                font=("Avenir", 8))  # Creates a text label
+            self.LabelCS.place(x=200, y=110)  # Plots a text label
 
 
 root = Tk()
